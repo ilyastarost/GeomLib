@@ -5,15 +5,26 @@
 
 namespace geomlib 
 {
-	double epsilon = 1e-6;
-	void SetEpsilon(const double& val) 
-	{
-		epsilon = val;
-	}
-	double GetEpsilon() 
-	{
-		return epsilon;
-	}
+	class Epsilon {
+	private:
+		static double eps;
+		static double epsPow2;
+	public:
+		static void SetEpsilon(const double& val)
+		{
+			eps = val;
+			epsPow2 = eps * eps;
+		}
+		static double Eps()
+		{
+			return eps;
+		}
+		static double EpsPow2()
+		{
+			return epsPow2;
+		}
+	};
+	
 
 	template <typename T> requires std::is_floating_point<T>::value
 	class Coordinates
@@ -29,11 +40,14 @@ namespace geomlib
 		};
 		Coordinates(T xx, T yy) : m_dblX(xx), m_dblY(yy), m_dblZ(0) {};
 		Coordinates(T xx, T yy, T zz) : m_dblX(xx), m_dblY(yy), m_dblZ(zz) {};
-		Coordinates(T arr[3])
+		Coordinates(T* begin)
 		{
-			m_dblX = arr[0];
-			m_dblY = arr[1];
-			m_dblZ = arr[2];
+			T* tmp = begin;
+			m_dblX = *tmp;
+			tmp = std::next(tmp);
+			m_dblY = *tmp;
+			tmp = std::next(tmp);
+			m_dblZ = *tmp;
 		}
 		inline T X() const { return m_dblX; }
 		inline T Y() const { return m_dblY; }
@@ -43,7 +57,7 @@ namespace geomlib
 		inline void SetZ(T zz) { m_dblZ = zz; }
 		bool operator== (const Coordinates& rhs) const 
 		{
-			return !IsEqual(*this, rhs);
+			return IsEqual(*this, rhs);
 		}
 		~Coordinates() {};
 	};
@@ -55,7 +69,7 @@ namespace geomlib
 		Point() : Coordinates<T>() {};
 		Point(T xx, T yy) : Coordinates<T>(xx, yy) {};
 		Point(T xx, T yy, T zz) : Coordinates<T>(xx, yy, zz) {};
-		Point(T arr[3]) : Coordinates<T>(arr) {};
+		Point(T* begin) : Coordinates<T>(begin) {};
 		bool operator== (const Point<T>& rhs) const
 		{
 			return IsEqual(*this, rhs);
@@ -64,9 +78,17 @@ namespace geomlib
 		{
 			return !IsEqual(*this, rhs);
 		}
-		T DistanceTo(const Point<T>& rhs) const
+		bool IsEqual(const Point<T>& pt, const T& epsPow2 = Epsilon.EpsPow2()) const
 		{
-			return DistanceBetween(*this, rhs);
+			return DistancePow2(pt) <= epsPow2;
+		}
+		T Distance(const Point<T>& vec) const
+		{
+			return std::sqrt((this->X() - vec.X()) * (this->X() - vec.X()) + (this->Y() - vec.Y()) * (this->Y() - vec.Y()) + (this->Z() - vec.Z()) * (this->Z() - vec.Z()));
+		}
+		T DistancePow2(const Point<T>& vec) const
+		{
+			return (this->X() - vec.X()) * (this->X() - vec.X()) + (this->Y() - vec.Y()) * (this->Y() - vec.Y()) + (this->Z() - vec.Z()) * (this->Z() - vec.Z());
 		}
 		~Point() {};
 	};
@@ -78,7 +100,7 @@ namespace geomlib
 		Vector() : Coordinates<T>() {};
 		Vector(T xx, T yy) : Coordinates<T>(xx, yy) {};
 		Vector(T xx, T yy, T zz) : Coordinates<T>(xx, yy, zz) {};
-		Vector(T arr[3]) : Coordinates<T>(arr) {};
+		Vector(T* begin) : Coordinates<T>(begin) {};
 		bool operator== (const Vector<T>& rhs) const
 		{
 			return IsEqual(*this, rhs);
@@ -87,9 +109,25 @@ namespace geomlib
 		{
 			return !IsEqual(*this, rhs);
 		}
+		Vector<T> operator* (double mul) const {
+			return Vector<T>(this->X() * mul, this->Y() * mul, this->Z() * mul);
+		}
+		Vector<T>& operator*= (double mul) const {
+			this->SetX(this->X() * mul);
+			this->SetY(this->Y() * mul);
+			this->SetZ(this->Z() * mul);
+		}
+		bool IsEqual(const Vector<T>& vec, const T& epsPow2 = Epsilon.EpsPow2())
+		{
+			return (*this - vec).LengthPow2() <= epsPow2;
+		}
 		T Length() const
 		{
-			return LengthOf(*this);
+			return std::sqrt(this->X() * this->X() + this->Y() * this->Y() + this->Z() * this->Z());
+		}
+		T LengthPow2() const
+		{
+			return this->X() * this->X() + this->Y() * this->Y() + this->Z() * this->Z();
 		}
 		void Normalize()
 		{
@@ -98,29 +136,34 @@ namespace geomlib
 			this->SetY(this->Y() / len);
 			this->SetZ(this->Z() / len);
 		}
-		T AngleTo(const Vector<T>& vec) const
+		Vector<T> NormalizedCopy() const
 		{
-			return AngleBetween(*this, vec);
+			T len = Length();
+			return Vector<T>(this->X() / len, this->Y() / len, this->Z() / len);
 		}
-		void CrossMul(const Vector<T>& vec) {
-			Vector<T> res = CrossProduct(*this, vec);
-			this->SetX(res.X());
-			this->SetY(res.Y());
-			this->SetZ(res.Z());
+		T Angle(const Vector<T>& vec) const
+		{
+			return std::acos(DotProduct(*this, vec) / Length() / vec.Length());
+		}
+		T DotProduct(const Vector<T>& vec) const
+		{
+			return this->X() * vec.X() + this->Y() * vec.Y();
+		}
+
+		Vector<T> CrossProduct(const Vector<T>& vec)
+		{
+			return Vector<T>(
+				 this->Y() * vec.Z() - this->Z() * vec.Y(),
+				-this->X() * vec.Z() + this->Z() * vec.X(),
+				 this->X() * vec.Y() - this->Y() * vec.X()
+				);
 		}
 		~Vector() {};
 	};
 
 	template <typename T> requires std::is_floating_point<T>::value
-	bool IsEqual(const Point<T>& lhs, const Point<T>& rhs, const T& eps = epsilon)
-	{
-		return lhs.DistanceTo(rhs) <= eps;
-	}
-
-	template <typename T> requires std::is_floating_point<T>::value
-	bool IsEqual(const Vector<T>& lhs, const Vector<T>& rhs, const T& eps = epsilon)
-	{
-		return (lhs - rhs).Length() <= eps;
+	Vector<T> operator* (double mul, const Vector<T>& vec) {
+		return Vector<T>(vec.X() * mul, vec.Y() * mul, vec.Z() * mul);
 	}
 
 	template <typename T, typename S>
@@ -152,45 +195,6 @@ namespace geomlib
 		lhs.SetX(lhs.X() - rhs.X());
 		lhs.SetY(lhs.Y() - rhs.Y());
 		return lhs;
-	}
-
-	template <typename T> requires std::is_floating_point<T>::value
-	T DotProduct(const Vector<T>& lhs, const Vector<T>& rhs) 
-	{
-		return lhs.X() * rhs.X() + lhs.Y() * rhs.Y();
-	}
-
-	template <typename T> requires std::is_floating_point<T>::value
-	Vector<T> CrossProduct(const Vector<T>& lhs, const Vector<T>& rhs)
-	{
-		return Vector<T>(
-			lhs.Y() * rhs.Z() - lhs.Z() * rhs.Y(),
-		   -lhs.X() * rhs.Z() + lhs.Z() * rhs.X(),
-			lhs.X() * rhs.Y() - lhs.Y() * rhs.X()
-			);
-	}
-
-	template <typename T> requires std::is_floating_point<T>::value
-	T AngleBetween(const Vector<T>& lhs, const Vector<T>& rhs)
-	{
-		return std::acos(DotProduct(lhs, rhs) / lhs.Length() / rhs.Length());
-	}
-
-	template <typename T> requires std::is_floating_point<T>::value
-	T DistanceBetween(const Point<T>& lhs, const Point<T>& rhs)
-	{
-		return std::sqrt((lhs.X() - rhs.X()) * (lhs.X() - rhs.X()) + (lhs.Y() - rhs.Y()) * (lhs.Y() - rhs.Y()) + (lhs.Z() - rhs.Z()) * (lhs.Z() - rhs.Z()));
-	}
-
-	template <typename T> requires std::is_floating_point<T>::value
-	Vector<T> Normalized(const Vector<T>& vec) {
-		T len = vec.Length();
-		return Vector<T>(vec.X() / len, vec.Y() / len, vec.Z() / len);
-	}
-
-	template <typename T> requires std::is_floating_point<T>::value
-	T LengthOf(const Vector<T>& vec) {
-		return std::sqrt(vec.X() * vec.X() + vec.Y() * vec.Y() + vec.Z() * vec.Z());
 	}
 
 }
