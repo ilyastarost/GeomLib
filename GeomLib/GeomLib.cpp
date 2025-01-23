@@ -1,3 +1,7 @@
+#include "source/Coordinates.h"
+#include "source/Generic.h"
+#include "source/Epsilon.h"
+#include "source/Vector.h"
 #include "source/Point.h"
 #include <iostream>
 

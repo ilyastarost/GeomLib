@@ -140,10 +140,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="GeomLib.cpp" />
+    <ClInclude Include="source\Coordinates.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="source\Epsilon.h" />
+    <ClInclude Include="source\Generic.h" />
+    <ClInclude Include="source\Linear.h" />
+    <ClInclude Include="source\Point.h" />
+    <ClInclude Include="source\Vector.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\Point.h" />
+    <ClCompile Include="GeomLib.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
