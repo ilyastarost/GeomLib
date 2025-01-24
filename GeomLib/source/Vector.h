@@ -6,10 +6,7 @@
 
 namespace geomlib
 {
-	template <typename T, typename N>
-	concept for_mul = std::is_floating_point<T>::value && std::is_arithmetic<N>::value;
-
-	template <typename T> requires std::is_floating_point<T>::value
+	template <typename T, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
 	class Vector : public Coordinates<T>
 	{
 	public:
@@ -24,10 +21,6 @@ namespace geomlib
 		bool operator!= (const Vector<T>& rhs) const
 		{
 			return !IsEqual(*this, rhs);
-		}
-		template <typename T, typename N> requires for_mul<T, N>
-		Vector<T> operator* (N mul) const {
-			return Vector<T>(this->X() * mul, this->Y() * mul, this->Z() * mul);
 		}
 		Vector<T>& operator*= (double mul) const {
 			this->SetX(this->X() * mul);
@@ -60,7 +53,7 @@ namespace geomlib
 		}
 		T Angle(const Vector<T>& vec) const
 		{
-			return std::acos(DotProduct(*this, vec) / Length() / vec.Length());
+			return std::acos(vec.DotProduct(*this) / Length() / vec.Length());
 		}
 		T DotProduct(const Vector<T>& vec) const
 		{
@@ -81,10 +74,25 @@ namespace geomlib
 		{
 			return vec == Opposite();
 		}
+		bool IsOrthogonal(const Vector<T>& vec) const
+		{
+			return DotProduct(vec) <= Epsilon::EpsPow2();
+		}
+		bool IsParallel(const Vector<T>& vec) const
+		{
+			return CrossProduct(vec).LengthPow2() <= Epsilon::EpsPow2();
+		}
 		~Vector() {};
 	};
 
-	template <typename T, typename N> requires for_mul<T, N>
+	template <typename T, typename N, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0, 
+									  typename std::enable_if<(std::is_arithmetic<N>()), int>::type = 0>
+	Vector<T> operator* (const Vector<T>& vec, N mul) {
+		return Vector<T>(vec.X() * mul, vec.Y() * mul, vec.Z() * mul);
+	}
+
+	template <typename T, typename N, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0, 
+									  typename std::enable_if<(std::is_arithmetic<N>()), int>::type = 0>
 		Vector<T> operator* (N mul, const Vector<T>& vec) {
 		return Vector<T>(vec.X() * mul, vec.Y() * mul, vec.Z() * mul);
 	}

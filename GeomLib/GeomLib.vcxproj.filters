@@ -30,7 +30,13 @@
     <ClInclude Include="source\Generic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Linear.h">
+    <ClInclude Include="source\Line.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Ray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Segment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

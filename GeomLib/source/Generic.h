@@ -8,23 +8,20 @@
 
 namespace geomlib
 {
-	template <typename T, typename S>
-	concept type_check = std::is_floating_point<T>::value && std::derived_from<S, Coordinates<T>>;
-
-	template <typename T, typename S> requires type_check<T, S>
-	S operator+ (const S& lhs, const Vector<T>& rhs)
+	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
+	S<T> operator+ (const S<T>& lhs, const Vector<T>& rhs)
 	{
-		return S(lhs.X() + rhs.X(), lhs.Y() + rhs.Y(), lhs.Z() + rhs.Z());
+		return S<T>(lhs.X() + rhs.X(), lhs.Y() + rhs.Y(), lhs.Z() + rhs.Z());
 	}
 
-	template <typename T, typename S> requires type_check<T, S>
-	S operator- (const S& lhs, const Vector<T>& rhs)
+	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
+	S<T> operator- (const S<T>& lhs, const Vector<T>& rhs)
 	{
-		return S(lhs.X() - rhs.X(), lhs.Y() - rhs.Y(), lhs.Z() + rhs.Z());
+		return S<T>(lhs.X() - rhs.X(), lhs.Y() - rhs.Y(), lhs.Z() + rhs.Z());
 	}
 
-	template <typename T, typename S> requires type_check<T, S>
-	S& operator+= (S& lhs, const Vector<T>& rhs)
+	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
+	S<T>& operator+= (S<T>& lhs, const Vector<T>& rhs)
 	{
 		lhs.SetX(lhs.X() + rhs.X());
 		lhs.SetY(lhs.Y() + rhs.Y());
@@ -32,8 +29,8 @@ namespace geomlib
 		return lhs;
 	}
 
-	template <typename T, typename S> requires type_check<T, S>
-	S& operator-= (S& lhs, const Vector<T>& rhs)
+	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
+	S<T>& operator-= (S<T>& lhs, const Vector<T>& rhs)
 	{
 		lhs.SetX(lhs.X() - rhs.X());
 		lhs.SetY(lhs.Y() - rhs.Y());
