@@ -28,7 +28,7 @@ namespace geomlib
 		}
 		T Distance(const Point<T>& vec) const
 		{
-			return std::sqrt((this->X() - vec.X()) * (this->X() - vec.X()) + (this->Y() - vec.Y()) * (this->Y() - vec.Y()) + (this->Z() - vec.Z()) * (this->Z() - vec.Z()));
+			return std::sqrt(DistancePow2(vec));
 		}
 		T DistancePow2(const Point<T>& vec) const
 		{

@@ -20,4 +20,7 @@ namespace geomlib
 			return epsPow2;
 		}
 	};
+
+	double Epsilon::eps = 1e-6;
+	double Epsilon::epsPow2 = 1e-12;
 }

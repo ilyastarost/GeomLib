@@ -1,13 +1,14 @@
-#include "source/Coordinates.h"
-#include "source/Generic.h"
-#include "source/Epsilon.h"
-#include "source/Vector.h"
-#include "source/Point.h"
+#include "source/Linear.h"
 #include <iostream>
+#include "source/Generic.h"
 
 int main()
 {
-	double r[3] = { 1, 2, 3 };
-	geomlib::Coordinates<double> q(r);
-	std::cout << q.X() << ' ' << q.Y() << ' ' << q.Z() << std::endl;
+	geomlib::Point<double> s1(-1, -3, -1), s2(2, 5, 3);
+	geomlib::Vector<double> v1(1, 2, 1), v2(-1, -4, -2);
+	geomlib::Line<double> l1(s1, v1), l2(s2, v2);
+	std::cout << l1.Belongs(s1 + 3 * v1) << std::endl;
+	std::cout << l1.Belongs(s2) << std::endl;
+	std::cout << l1.DistanceToLine(s2) << std::endl;
+	std::cout << l1.Intersects(l2) << std::endl;
 }

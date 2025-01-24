@@ -14,13 +14,13 @@ namespace geomlib
 	template <typename T, typename S> requires type_check<T, S>
 	S operator+ (const S& lhs, const Vector<T>& rhs)
 	{
-		return S(lhs.X() + rhs.X(), lhs.Y() + rhs.Y());
+		return S(lhs.X() + rhs.X(), lhs.Y() + rhs.Y(), lhs.Z() + rhs.Z());
 	}
 
 	template <typename T, typename S> requires type_check<T, S>
 	S operator- (const S& lhs, const Vector<T>& rhs)
 	{
-		return S(lhs.X() + rhs.X(), lhs.Y() + rhs.Y());
+		return S(lhs.X() - rhs.X(), lhs.Y() - rhs.Y(), lhs.Z() + rhs.Z());
 	}
 
 	template <typename T, typename S> requires type_check<T, S>
@@ -28,6 +28,7 @@ namespace geomlib
 	{
 		lhs.SetX(lhs.X() + rhs.X());
 		lhs.SetY(lhs.Y() + rhs.Y());
+		lhs.SetZ(lhs.Z() + rhs.Z());
 		return lhs;
 	}
 
@@ -36,6 +37,7 @@ namespace geomlib
 	{
 		lhs.SetX(lhs.X() - rhs.X());
 		lhs.SetY(lhs.Y() - rhs.Y());
+		lhs.SetZ(lhs.Z() - rhs.Z());
 		return lhs;
 	}
 }

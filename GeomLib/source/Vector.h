@@ -1,12 +1,14 @@
 #pragma once
-#include "Coordinates.h"
-#include "Epsilon.h"
+#include "Generic.h"
 #include <type_traits>
 #include <concepts>
 #include <cmath>
 
 namespace geomlib
 {
+	template <typename T, typename N>
+	concept for_mul = std::is_floating_point<T>::value && std::is_arithmetic<N>::value;
+
 	template <typename T> requires std::is_floating_point<T>::value
 	class Vector : public Coordinates<T>
 	{
@@ -23,7 +25,8 @@ namespace geomlib
 		{
 			return !IsEqual(*this, rhs);
 		}
-		Vector<T> operator* (double mul) const {
+		template <typename T, typename N> requires for_mul<T, N>
+		Vector<T> operator* (N mul) const {
 			return Vector<T>(this->X() * mul, this->Y() * mul, this->Z() * mul);
 		}
 		Vector<T>& operator*= (double mul) const {
@@ -31,7 +34,7 @@ namespace geomlib
 			this->SetY(this->Y() * mul);
 			this->SetZ(this->Z() * mul);
 		}
-		bool IsEqual(const Vector<T>& vec, const T& epsPow2 = Epsilon.EpsPow2())
+		bool IsEqual(const Vector<T>& vec, T epsPow2 = Epsilon::EpsPow2())
 		{
 			return (*this - vec).LengthPow2() <= epsPow2;
 		}
@@ -81,8 +84,8 @@ namespace geomlib
 		~Vector() {};
 	};
 
-	template <typename T> requires std::is_floating_point<T>::value
-		Vector<T> operator* (double mul, const Vector<T>& vec) {
+	template <typename T, typename N> requires for_mul<T, N>
+		Vector<T> operator* (N mul, const Vector<T>& vec) {
 		return Vector<T>(vec.X() * mul, vec.Y() * mul, vec.Z() * mul);
 	}
 }
