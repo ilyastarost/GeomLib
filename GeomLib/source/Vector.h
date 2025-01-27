@@ -1,7 +1,6 @@
 #pragma once
 #include "Generic.h"
 #include <type_traits>
-#include <concepts>
 #include <cmath>
 
 namespace geomlib
@@ -16,18 +15,18 @@ namespace geomlib
 		Vector(T* begin) : Coordinates<T>(begin) {};
 		bool operator== (const Vector<T>& rhs) const
 		{
-			return IsEqual(*this, rhs);
+			return IsEqual(rhs);
 		}
 		bool operator!= (const Vector<T>& rhs) const
 		{
-			return !IsEqual(*this, rhs);
+			return !IsEqual(rhs);
 		}
 		Vector<T>& operator*= (double mul) const {
 			this->SetX(this->X() * mul);
 			this->SetY(this->Y() * mul);
 			this->SetZ(this->Z() * mul);
 		}
-		bool IsEqual(const Vector<T>& vec, T epsPow2 = Epsilon::EpsPow2())
+		bool IsEqual(const Vector<T>& vec, T epsPow2 = Epsilon::EpsPow2()) const
 		{
 			return (*this - vec).LengthPow2() <= epsPow2;
 		}

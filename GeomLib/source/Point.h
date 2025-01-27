@@ -1,7 +1,6 @@
 #pragma once
 #include "Coordinates.h"
 #include <type_traits>
-#include <concepts>
 #include <cmath>
 
 namespace geomlib 
@@ -16,13 +15,13 @@ namespace geomlib
 		Point(T* begin) : Coordinates<T>(begin) {};
 		bool operator== (const Point<T>& rhs) const
 		{
-			return IsEqual(*this, rhs);
+			return IsEqual(rhs);
 		}
 		bool operator!= (const Point<T>& rhs) const
 		{
-			return !IsEqual(*this, rhs);
+			return !IsEqual(rhs);
 		}
-		bool IsEqual(const Point<T>& pt, const T& epsPow2 = Epsilon.EpsPow2()) const
+		bool IsEqual(const Point<T>& pt, const T& epsPow2 = Epsilon::EpsPow2()) const
 		{
 			return DistancePow2(pt) <= epsPow2;
 		}

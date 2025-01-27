@@ -9,6 +9,10 @@ namespace geomlib
 	public:
 		Ray() : Line<T>() {};
 		Ray(Point<T> pt, Vector<T> vec) : Line<T>(pt, vec) {};
+		bool operator== (const Ray<T>& rhs) const
+		{
+			return this->Start().IsEqual(rhs.Start()) && this->Direction().IsEqual(rhs.Direction());
+		}
 		Point<T> FindNearestPointToThis(const Point<T>& pt) const override
 		{
 			T param = GetParameter(pt);

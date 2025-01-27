@@ -14,6 +14,10 @@ namespace geomlib
 			this->m_ptStart = pt1;
 			this->m_vecDirection = Vector<T>(pt2.X() - pt1.X(), pt2.Y() - pt1.Y(), pt2.Z() - pt1.Z());
 		}
+		bool operator== (const Segment<T>& rhs) const
+		{
+			return this->Start().IsEqual(rhs.Start()) && this->Direction().IsEqual(rhs.Direction());
+		}
 		inline Point<T> End() {
 			return this->Start() + this->Direction();
 		}

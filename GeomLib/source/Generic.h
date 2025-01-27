@@ -4,23 +4,22 @@
 #include "Vector.h"
 #include "Point.h"
 #include <type_traits>
-#include <concepts>
 
 namespace geomlib
 {
-	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
+	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S>
 	S<T> operator+ (const S<T>& lhs, const Vector<T>& rhs)
 	{
 		return S<T>(lhs.X() + rhs.X(), lhs.Y() + rhs.Y(), lhs.Z() + rhs.Z());
 	}
 
-	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
+	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S>
 	S<T> operator- (const S<T>& lhs, const Vector<T>& rhs)
 	{
-		return S<T>(lhs.X() - rhs.X(), lhs.Y() - rhs.Y(), lhs.Z() + rhs.Z());
+		return S<T>(lhs.X() - rhs.X(), lhs.Y() - rhs.Y(), lhs.Z() - rhs.Z());
 	}
 
-	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
+	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S>
 	S<T>& operator+= (S<T>& lhs, const Vector<T>& rhs)
 	{
 		lhs.SetX(lhs.X() + rhs.X());
@@ -29,7 +28,7 @@ namespace geomlib
 		return lhs;
 	}
 
-	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
+	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S>
 	S<T>& operator-= (S<T>& lhs, const Vector<T>& rhs)
 	{
 		lhs.SetX(lhs.X() - rhs.X());

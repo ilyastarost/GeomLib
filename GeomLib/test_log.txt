@@ -1,0 +1,9 @@
+Test "Points" results:
+	Subtest "Equal": OK
+	Subtest "Uneqal": OK
+Test "Vectors" results:
+	Subtest "2D constructor": OK
+	Subtest "3D constructor": OK
+	Subtest "Equal": OK
+	Subtest "Equal func": OK
+	Subtest "Uneqal func": OK

@@ -27,6 +27,10 @@ namespace geomlib
 	public:
 		Line() = default;
 		Line(const Point<T>& pt, const Vector<T>& vec) : m_ptStart(pt), m_vecDirection(vec) {};
+		bool operator== (const Line<T>& rhs) const
+		{
+			return Start().IsEqual(rhs.Start()) && Direction().IsEqual(rhs.Direction());
+		}
 		inline Point<T> Start() const { return m_ptStart; }
 		inline Vector<T> Direction() const { return m_vecDirection; }
 		inline void SetStart(const Point<T>& pt) { m_ptStart = pt; }
