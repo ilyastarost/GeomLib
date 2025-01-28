@@ -4,22 +4,23 @@
 #include "Vector.h"
 #include "Point.h"
 #include <type_traits>
+#include <cmath>
 
 namespace geomlib
 {
-	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S>
+	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Coordinates<T>, S<T>>()), int>::type = 0>
 	S<T> operator+ (const S<T>& lhs, const Vector<T>& rhs)
 	{
 		return S<T>(lhs.X() + rhs.X(), lhs.Y() + rhs.Y(), lhs.Z() + rhs.Z());
 	}
 
-	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S>
+	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Coordinates<T>, S<T>>()), int>::type = 0>
 	S<T> operator- (const S<T>& lhs, const Vector<T>& rhs)
 	{
 		return S<T>(lhs.X() - rhs.X(), lhs.Y() - rhs.Y(), lhs.Z() - rhs.Z());
 	}
 
-	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S>
+	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Coordinates<T>, S<T>>()), int>::type = 0>
 	S<T>& operator+= (S<T>& lhs, const Vector<T>& rhs)
 	{
 		lhs.SetX(lhs.X() + rhs.X());
@@ -28,12 +29,18 @@ namespace geomlib
 		return lhs;
 	}
 
-	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S>
+	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Coordinates<T>, S<T>>()), int>::type = 0>
 	S<T>& operator-= (S<T>& lhs, const Vector<T>& rhs)
 	{
 		lhs.SetX(lhs.X() - rhs.X());
 		lhs.SetY(lhs.Y() - rhs.Y());
 		lhs.SetZ(lhs.Z() - rhs.Z());
 		return lhs;
+	}
+
+	template <typename T, typename S, typename std::enable_if<(std::is_arithmetic<T>()), int>::type = 0, typename std::enable_if<(std::is_arithmetic<S>()), int>::type = 0>
+	bool AreEqual(T lhs, S rhs, double eps = Epsilon::Eps())
+	{
+		return abs(lhs - rhs) <= eps;
 	}
 }

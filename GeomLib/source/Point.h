@@ -10,8 +10,7 @@ namespace geomlib
 	{
 	public:
 		Point() : Coordinates<T>() {};
-		Point(T xx, T yy) : Coordinates<T>(xx, yy) {};
-		Point(T xx, T yy, T zz) : Coordinates<T>(xx, yy, zz) {};
+		Point(T xx, T yy, T zz = 0) : Coordinates<T>(xx, yy, zz) {};
 		Point(T* begin) : Coordinates<T>(begin) {};
 		bool operator== (const Point<T>& rhs) const
 		{

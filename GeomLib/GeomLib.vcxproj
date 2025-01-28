@@ -146,9 +146,11 @@
     <ClInclude Include="source\Epsilon.h" />
     <ClInclude Include="source\Generic.h" />
     <ClInclude Include="source\Line.h" />
+    <ClInclude Include="source\Plane.h" />
     <ClInclude Include="source\Point.h" />
     <ClInclude Include="source\Ray.h" />
     <ClInclude Include="source\Segment.h" />
+    <ClInclude Include="source\Surface.h" />
     <ClInclude Include="source\Testing.h" />
     <ClInclude Include="source\Vector.h" />
   </ItemGroup>

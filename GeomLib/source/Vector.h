@@ -10,8 +10,7 @@ namespace geomlib
 	{
 	public:
 		Vector() : Coordinates<T>() {};
-		Vector(T xx, T yy) : Coordinates<T>(xx, yy) {};
-		Vector(T xx, T yy, T zz) : Coordinates<T>(xx, yy, zz) {};
+		Vector(T xx, T yy, T zz = 0) : Coordinates<T>(xx, yy, zz) {};
 		Vector(T* begin) : Coordinates<T>(begin) {};
 		bool operator== (const Vector<T>& rhs) const
 		{
@@ -21,10 +20,12 @@ namespace geomlib
 		{
 			return !IsEqual(rhs);
 		}
-		Vector<T>& operator*= (double mul) const {
+		template <typename N, typename std::enable_if<(std::is_arithmetic<N>()), int>::type = 0>
+		Vector<T>& operator*= (N mul) {
 			this->SetX(this->X() * mul);
 			this->SetY(this->Y() * mul);
 			this->SetZ(this->Z() * mul);
+			return *this;
 		}
 		bool IsEqual(const Vector<T>& vec, T epsPow2 = Epsilon::EpsPow2()) const
 		{
@@ -41,18 +42,23 @@ namespace geomlib
 		void Normalize()
 		{
 			T len = Length();
-			this->SetX(this->X() / len);
-			this->SetY(this->Y() / len);
-			this->SetZ(this->Z() / len);
+			if (len) {
+				this->SetX(this->X() / len);
+				this->SetY(this->Y() / len);
+				this->SetZ(this->Z() / len);
+			}
+			//else ???
 		}
 		Vector<T> NormalizedCopy() const
 		{
 			T len = Length();
-			return Vector<T>(this->X() / len, this->Y() / len, this->Z() / len);
+			if (len) return Vector<T>(this->X() / len, this->Y() / len, this->Z() / len);
+			return *this; //???
 		}
 		T Angle(const Vector<T>& vec) const
 		{
-			return std::acos(vec.DotProduct(*this) / Length() / vec.Length());
+			if (Length() != 0 && vec.Length() != 0) return std::acos(vec.DotProduct(*this) / Length() / vec.Length());
+			return 0;
 		}
 		T DotProduct(const Vector<T>& vec) const
 		{
@@ -71,11 +77,11 @@ namespace geomlib
 		}
 		bool IsOpposite(const Vector<T>& vec) const
 		{
-			return vec == Opposite();
+			return vec.IsEqual(Opposite());
 		}
 		bool IsOrthogonal(const Vector<T>& vec) const
 		{
-			return DotProduct(vec) <= Epsilon::EpsPow2();
+			return abs(DotProduct(vec)) <= Epsilon::EpsPow2();
 		}
 		bool IsParallel(const Vector<T>& vec) const
 		{

@@ -1,9 +1,71 @@
-Test "Points" results:
-	Subtest "Equal": OK
-	Subtest "Uneqal": OK
-Test "Vectors" results:
-	Subtest "2D constructor": OK
-	Subtest "3D constructor": OK
-	Subtest "Equal": OK
-	Subtest "Equal func": OK
-	Subtest "Uneqal func": OK
+Test "Multiplication" results:
+	Subtest "Dot parallel": OK
+	Subtest "Cross parallel": OK
+	Subtest "Dot orthogonal": OK
+	Subtest "Cross orthogonal": OK
+	Subtest "Dot zero": OK
+	Subtest "Cross zero": OK
+Test "Belonging" results:
+	Subtest "Start point of line": OK
+	Subtest "Start point of ray": OK
+	Subtest "Start point of segment": OK
+	Subtest "End point of segment": OK
+	Subtest "Random point of line": OK
+	Subtest "Random point of ray": OK
+	Subtest "Random point of segment": OK
+	Subtest "Random point not on line": OK
+	Subtest "Random point not on ray": OK
+	Subtest "Random point not on segment": OK
+	Subtest "Negative parameter for ray": OK
+	Subtest "Negative parameter for segment": OK
+	Subtest ">1 parameter for segment": OK
+Test "Intersections" results:
+	Subtest "Random LL intersection": OK
+	Subtest "Random LR intersection": OK
+	Subtest "Random LS intersection": OK
+	Subtest "Random RR intersection": OK
+	Subtest "Random RS intersection": OK
+	Subtest "Random SS intersection": OK
+	Subtest "Same start point LL intersection": OK
+	Subtest "Same start point LR intersection": OK
+	Subtest "Same start point LS intersection": OK
+	Subtest "Same start point RR intersection": OK
+	Subtest "Same start point RS intersection": OK
+	Subtest "Same start point SS intersection": OK
+	Subtest "Intersection with negative parameter for ray": OK
+	Subtest "Intersection with negative parameter for segment": OK
+	Subtest "Intersection with >1 parameter for segment": OK
+	Subtest "Crossing LL": OK
+	Subtest "Crossing LR": OK
+	Subtest "Crossing LS": OK
+	Subtest "Crossing RR": OK
+	Subtest "Crossing RS": OK
+	Subtest "Crossing SS": OK
+	Subtest "No intersection of opposite rays": OK
+	Subtest "Same start point of opposite rays": OK
+	Subtest "Intersection of opposite rays": OK
+	Subtest "Same direction collinear rays 1": OK
+	Subtest "Same direction collinear rays 2": OK
+	Subtest "Same lines 1": OK
+	Subtest "Same lines 2": OK
+	Subtest "Same segments": OK
+Test "Points of intersection" results:
+	Subtest "Same segments": OK
+	Subtest "Same lines 1": OK
+	Subtest "Same lines 2": OK
+	Subtest "Same start point of opposite rays": OK
+	Subtest "Intersection of opposite rays": OK
+	Subtest "Same direction collinear rays 1": OK
+	Subtest "Same direction collinear rays 2": OK
+	Subtest "Random LL intersection": OK
+	Subtest "Random LR intersection": OK
+	Subtest "Random LS intersection": OK
+	Subtest "Random RR intersection": OK
+	Subtest "Random RS intersection": OK
+	Subtest "Random SS intersection": OK
+	Subtest "Same start point LL intersection": OK
+	Subtest "Same start point LR intersection": OK
+	Subtest "Same start point LS intersection": OK
+	Subtest "Same start point RR intersection": OK
+	Subtest "Same start point RS intersection": OK
+	Subtest "Same start point SS intersection": OK

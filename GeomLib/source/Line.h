@@ -36,13 +36,13 @@ namespace geomlib
 		inline void SetStart(const Point<T>& pt) { m_ptStart = pt; }
 		inline void SetDirection(const Vector<T>& vec) { m_vecDirection = vec; }
 
-		Point<T> FindNearestPointToLine(const Point<T>& pt) const {
+		virtual Point<T> FindNearestPointToLine(const Point<T>& pt) const {
 			T param = this->GetParameter(pt);
 			return Point<T>(this->m_ptStart.X() + param * this->m_vecDirection.X(),
 							this->m_ptStart.Y() + param * this->m_vecDirection.Y(),
 							this->m_ptStart.Z() + param * this->m_vecDirection.Z());
 		}
-		Point<T> FindNearestPointToThis(const Point<T>& pt) const {
+		virtual Point<T> FindNearestPointToThis(const Point<T>& pt) const {
 			return FindNearestPointToLine(pt);
 		}
 		T DistanceToLine(const Point<T>& pt) const
@@ -61,50 +61,59 @@ namespace geomlib
 		{
 			return pt.DistancePow2(FindNearestPointToThis(pt));
 		}
-		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S>
+		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Line<T>, S<T>>()), int>::type = 0>
 		bool IsCollinear(const S<T>& lin) const
 		{
 			T dist = DistanceToLinePow2(lin.Start());
 			T ang = this->m_vecDirection.Angle(lin.Direction());
-			return (dist <= Epsilon::EpsPow2() && ang <= Epsilon::Eps());
+			return (dist <= Epsilon::EpsPow2() && (abs(ang) <= Epsilon::Eps() || abs(ang - acos(-1)) <= Epsilon::Eps()));
 		}
 
-		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S>
+		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Line<T>, S<T>>()), int>::type = 0>
 		bool IsOrthogonal(const S<T>& lin) const
 		{
 			return m_vecDirection.IsOrthogonal(lin.Direction());
 		}
 
-		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S>
+		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Line<T>, S<T>>()), int>::type = 0>
 		bool IsParallel(const S<T>& lin) const
 		{
 			return m_vecDirection.IsParallel(lin.Direction());
 		}
 
-		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S>
+		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Line<T>, S<T>>()), int>::type = 0>
 		bool Intersects(const S<T>& lin) const
 		{
 			Vector<T> tmp(m_ptStart.X() - lin.Start().X(),
 						  m_ptStart.Y() - lin.Start().Y(),
 						  m_ptStart.Z() - lin.Start().Z());
-			if (tmp.DotProduct(lin.Direction().CrossProduct(m_vecDirection)) <= Epsilon::Eps())
+			if (abs(tmp.DotProduct(lin.Direction().CrossProduct(m_vecDirection))) <= Epsilon::Eps())
 			{
+				if (IsCollinear(lin)) {
+					if (this->Belongs(lin.Start()) || lin.Belongs(m_ptStart)) return true;
+					return false;
+				}
 				Point<T> ans = FindPointOfIntersection(Line<T>(m_ptStart, m_vecDirection), Line<T>(lin.Start(), lin.Direction()));
 				return (Belongs(ans) && lin.Belongs(ans));
 			}
 			return false;
 		}
 
-		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S>
+		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Line<T>, S<T>>()), int>::type = 0>
 		Point<T> FindIntersection(const S<T>& lin) const
 		{
+			if (IsCollinear(lin)) {
+				if (Belongs(lin.Start())) return lin.Start();
+				else if (lin.Belongs(m_ptStart)) return m_ptStart;
+				return Point<T>(NAN, NAN);
+			}
 			if (Intersects(lin)) return FindPointOfIntersection(Line<T>(m_ptStart, m_vecDirection), Line<T>(lin.Start(), lin.Direction()));
 			return Point<T>(NAN, NAN);
 		}
 
 		bool Belongs(const Point<T>& pt) const
 		{
-			return DistanceToLinePow2(pt) <= Epsilon::EpsPow2();
+			return DistanceToThisPow2(pt) <= Epsilon::EpsPow2();
 		}
 	};
 }

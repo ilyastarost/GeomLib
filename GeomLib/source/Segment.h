@@ -21,9 +21,9 @@ namespace geomlib
 		inline Point<T> End() {
 			return this->Start() + this->Direction();
 		}
-		Point<T> FindNearestPoint(const Point<T>& pt) const override
+		Point<T> FindNearestPointToThis(const Point<T>& pt) const override
 		{
-			T param = GetParameter(pt);
+			T param = this->GetParameter(pt);
 			if (param < 0) param = 0;
 			else if (param > 1) param = 1;
 			return Point<T>(this->m_ptStart.X() + param * this->m_vecDirection.X(),

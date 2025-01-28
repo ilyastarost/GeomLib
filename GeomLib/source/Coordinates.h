@@ -16,8 +16,7 @@ namespace geomlib
 			m_dblY = 0;
 			m_dblZ = 0;
 		};
-		Coordinates(T xx, T yy) : m_dblX(xx), m_dblY(yy), m_dblZ(0) {};
-		Coordinates(T xx, T yy, T zz) : m_dblX(xx), m_dblY(yy), m_dblZ(zz) {};
+		Coordinates(T xx, T yy, T zz = 0) : m_dblX(xx), m_dblY(yy), m_dblZ(zz) {};
 		Coordinates(T* begin)
 		{
 			T* tmp = begin;

@@ -15,7 +15,7 @@ namespace geomlib
 		}
 		Point<T> FindNearestPointToThis(const Point<T>& pt) const override
 		{
-			T param = GetParameter(pt);
+			T param = this->GetParameter(pt);
 			if (param < 0) param = 0;
 			return Point<T>(this->m_ptStart.X() + param * this->m_vecDirection.X(),
 				this->m_ptStart.Y() + param * this->m_vecDirection.Y(),
