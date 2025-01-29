@@ -143,6 +143,7 @@
     <ClInclude Include="source\Coordinates.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="source\Cylinder.h" />
     <ClInclude Include="source\Epsilon.h" />
     <ClInclude Include="source\Generic.h" />
     <ClInclude Include="source\Line.h" />

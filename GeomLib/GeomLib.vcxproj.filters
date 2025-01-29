@@ -48,6 +48,9 @@
     <ClInclude Include="source\Plane.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\Cylinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeomLib.cpp">

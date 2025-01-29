@@ -1,5 +1,7 @@
 #include "source/Testing.h"
 #include "source/Segment.h"
+#include "source/Cylinder.h"
+#include "source/Plane.h"
 #include "source/Line.h"
 #include "source/Ray.h"
 #include <iostream>
@@ -151,4 +153,10 @@ int main()
 	SUBTEST_ASSERT("Same start point SS intersection", s1.Belongs(s1.FindIntersection(s2)) && s2.Belongs(s1.FindIntersection(s2)));
 
 	TESTING_SECTION_CLOSE;
+
+	geomlib::Line<double> a(geomlib::Point<double>(-4, -2, 0), geomlib::Vector<double>(1, 1, 0));
+	geomlib::Cylinder<double> q(geomlib::Point<double>(0, 0, 0), geomlib::Vector<double>(0, 0, 1), 2);
+	auto w = q.FindIntersections(a);
+	int y = 0;
+
 }

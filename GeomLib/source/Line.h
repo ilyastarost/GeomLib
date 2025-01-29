@@ -3,7 +3,7 @@
 
 namespace geomlib
 {
-	template <typename T, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
+	FLOATING(T)
 	class Line
 	{
 	protected:
@@ -61,7 +61,7 @@ namespace geomlib
 		{
 			return pt.DistancePow2(FindNearestPointToThis(pt));
 		}
-		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Line<T>, S<T>>()), int>::type = 0>
+		DERIVED_FROM_LINE(S)
 		bool IsCollinear(const S<T>& lin) const
 		{
 			T dist = DistanceToLinePow2(lin.Start());
@@ -69,19 +69,19 @@ namespace geomlib
 			return (dist <= Epsilon::EpsPow2() && (abs(ang) <= Epsilon::Eps() || abs(ang - acos(-1)) <= Epsilon::Eps()));
 		}
 
-		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Line<T>, S<T>>()), int>::type = 0>
+		DERIVED_FROM_LINE(S)
 		bool IsOrthogonal(const S<T>& lin) const
 		{
 			return m_vecDirection.IsOrthogonal(lin.Direction());
 		}
 
-		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Line<T>, S<T>>()), int>::type = 0>
+		DERIVED_FROM_LINE(S)
 		bool IsParallel(const S<T>& lin) const
 		{
 			return m_vecDirection.IsParallel(lin.Direction());
 		}
 
-		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Line<T>, S<T>>()), int>::type = 0>
+		DERIVED_FROM_LINE(S)
 		bool Intersects(const S<T>& lin) const
 		{
 			Vector<T> tmp(m_ptStart.X() - lin.Start().X(),
@@ -99,7 +99,7 @@ namespace geomlib
 			return false;
 		}
 
-		template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Line<T>, S<T>>()), int>::type = 0>
+		DERIVED_FROM_LINE(S)
 		Point<T> FindIntersection(const S<T>& lin) const
 		{
 			if (IsCollinear(lin)) {

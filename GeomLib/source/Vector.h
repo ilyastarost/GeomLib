@@ -3,9 +3,11 @@
 #include <type_traits>
 #include <cmath>
 
+#define FLOATING_AND_ARITHMETIC(T, N) template <typename T, typename N, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0, typename std::enable_if<(std::is_arithmetic<N>()), int>::type = 0>
+
 namespace geomlib
 {
-	template <typename T, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
+	FLOATING(T)
 	class Vector : public Coordinates<T>
 	{
 	public:
@@ -39,7 +41,7 @@ namespace geomlib
 		{
 			return this->X() * this->X() + this->Y() * this->Y() + this->Z() * this->Z();
 		}
-		void Normalize()
+		Vector<T>& Normalize()
 		{
 			T len = Length();
 			if (len) {
@@ -47,13 +49,13 @@ namespace geomlib
 				this->SetY(this->Y() / len);
 				this->SetZ(this->Z() / len);
 			}
-			//else ???
+			return *this;
 		}
 		Vector<T> NormalizedCopy() const
 		{
 			T len = Length();
 			if (len) return Vector<T>(this->X() / len, this->Y() / len, this->Z() / len);
-			return *this; //???
+			return *this;
 		}
 		T Angle(const Vector<T>& vec) const
 		{
@@ -87,18 +89,22 @@ namespace geomlib
 		{
 			return CrossProduct(vec).LengthPow2() <= Epsilon::EpsPow2();
 		}
+		Vector<T> GetOrthogonal() const {
+			if (abs(this->X()) > Epsilon::Eps()) {
+				return Vector<T>(this->Y(), -this->X(), 0);
+			}
+			return Vector<T>(0, this->Z(), -this->Y());
+		}
 		~Vector() {};
 	};
 
-	template <typename T, typename N, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0, 
-									  typename std::enable_if<(std::is_arithmetic<N>()), int>::type = 0>
+	FLOATING_AND_ARITHMETIC(T, N)
 	Vector<T> operator* (const Vector<T>& vec, N mul) {
 		return Vector<T>(vec.X() * mul, vec.Y() * mul, vec.Z() * mul);
 	}
 
-	template <typename T, typename N, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0, 
-									  typename std::enable_if<(std::is_arithmetic<N>()), int>::type = 0>
-		Vector<T> operator* (N mul, const Vector<T>& vec) {
+	FLOATING_AND_ARITHMETIC(T, N)
+	Vector<T> operator* (N mul, const Vector<T>& vec) {
 		return Vector<T>(vec.X() * mul, vec.Y() * mul, vec.Z() * mul);
 	}
 }

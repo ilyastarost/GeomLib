@@ -6,21 +6,24 @@
 #include <type_traits>
 #include <cmath>
 
+#define DERIVED_FROM_COORDINATES(S, T) template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Coordinates<T>, S<T>>()), int>::type = 0>
+#define DERIVED_FROM_LINE(S) template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Line<T>, S<T>>()), int>::type = 0>
+
 namespace geomlib
 {
-	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Coordinates<T>, S<T>>()), int>::type = 0>
+	DERIVED_FROM_COORDINATES(S, T)
 	S<T> operator+ (const S<T>& lhs, const Vector<T>& rhs)
 	{
 		return S<T>(lhs.X() + rhs.X(), lhs.Y() + rhs.Y(), lhs.Z() + rhs.Z());
 	}
 
-	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Coordinates<T>, S<T>>()), int>::type = 0>
+	DERIVED_FROM_COORDINATES(S, T)
 	S<T> operator- (const S<T>& lhs, const Vector<T>& rhs)
 	{
 		return S<T>(lhs.X() - rhs.X(), lhs.Y() - rhs.Y(), lhs.Z() - rhs.Z());
 	}
 
-	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Coordinates<T>, S<T>>()), int>::type = 0>
+	DERIVED_FROM_COORDINATES(S, T)
 	S<T>& operator+= (S<T>& lhs, const Vector<T>& rhs)
 	{
 		lhs.SetX(lhs.X() + rhs.X());
@@ -29,7 +32,7 @@ namespace geomlib
 		return lhs;
 	}
 
-	template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Coordinates<T>, S<T>>()), int>::type = 0>
+	DERIVED_FROM_COORDINATES(S, T)
 	S<T>& operator-= (S<T>& lhs, const Vector<T>& rhs)
 	{
 		lhs.SetX(lhs.X() - rhs.X());

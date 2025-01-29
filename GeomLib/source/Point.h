@@ -5,7 +5,7 @@
 
 namespace geomlib 
 {
-	template <typename T, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
+	FLOATING(T)
 	class Point : public Coordinates<T>
 	{
 	public:

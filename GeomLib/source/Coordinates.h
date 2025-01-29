@@ -2,9 +2,11 @@
 #include <type_traits>
 #include <iterator>
 
+#define FLOATING(T) template <typename T, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
+
 namespace geomlib
 {
-	template <typename T, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
+	FLOATING(T)
 	class Coordinates
 	{
 	protected:
