@@ -1,5 +1,6 @@
 #pragma once
 #include "Generic.h"
+#include "Point.h"
 #include <type_traits>
 #include <cmath>
 
@@ -59,7 +60,7 @@ namespace geomlib
 		}
 		T Angle(const Vector<T>& vec) const
 		{
-			if (Length() != 0 && vec.Length() != 0) return std::acos(vec.DotProduct(*this) / Length() / vec.Length());
+			if (Length() != 0 && vec.Length() != 0) return std::acos(DotProduct(vec) / Length() / vec.Length());
 			return 0;
 		}
 		T DotProduct(const Vector<T>& vec) const
@@ -77,20 +78,20 @@ namespace geomlib
 		Vector<T> Opposite() const {
 			return Vector<T>(-this->X(), -this->Y(), -this->Z());
 		}
-		bool IsOpposite(const Vector<T>& vec) const
+		bool IsOpposite(const Vector<T>& vec, T eps = Epsilon::Eps()) const
 		{
-			return vec.IsEqual(Opposite());
+			return Angle(vec) <= eps;
 		}
-		bool IsOrthogonal(const Vector<T>& vec) const
+		bool IsOrthogonal(const Vector<T>& vec, T epsPow2 = Epsilon::EpsPow2()) const
 		{
-			return abs(DotProduct(vec)) <= Epsilon::EpsPow2();
+			return abs(DotProduct(vec)) <= epsPow2;
 		}
-		bool IsParallel(const Vector<T>& vec) const
+		bool IsParallel(const Vector<T>& vec, T epsPow2 = Epsilon::EpsPow2()) const
 		{
-			return CrossProduct(vec).LengthPow2() <= Epsilon::EpsPow2();
+			return CrossProduct(vec).LengthPow2() <= epsPow2;
 		}
-		Vector<T> GetOrthogonal() const {
-			if (abs(this->X()) > Epsilon::Eps()) {
+		Vector<T> GetOrthogonal(T eps = Epsilon::Eps()) const {
+			if (abs(this->X()) > eps) {
 				return Vector<T>(this->Y(), -this->X(), 0);
 			}
 			return Vector<T>(0, this->Z(), -this->Y());
@@ -106,5 +107,11 @@ namespace geomlib
 	FLOATING_AND_ARITHMETIC(T, N)
 	Vector<T> operator* (N mul, const Vector<T>& vec) {
 		return Vector<T>(vec.X() * mul, vec.Y() * mul, vec.Z() * mul);
+	}
+
+	FLOATING(T)
+	Vector<T> operator- (const Point<T>& lhs, const Point<T>& rhs)
+	{
+		return Vector<T>(lhs.X() - rhs.X(), lhs.Y() - rhs.Y(), lhs.Z() - rhs.Z());
 	}
 }

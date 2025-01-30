@@ -17,9 +17,7 @@ namespace geomlib
 		{
 			T param = this->GetParameter(pt);
 			if (param < 0) param = 0;
-			return Point<T>(this->m_ptStart.X() + param * this->m_vecDirection.X(),
-				this->m_ptStart.Y() + param * this->m_vecDirection.Y(),
-				this->m_ptStart.Z() + param * this->m_vecDirection.Z());
+			return this->m_ptStart + param * this->m_vecDirection;
 		}
 	};
 }

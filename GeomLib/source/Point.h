@@ -20,7 +20,7 @@ namespace geomlib
 		{
 			return !IsEqual(rhs);
 		}
-		bool IsEqual(const Point<T>& pt, const T& epsPow2 = Epsilon::EpsPow2()) const
+		bool IsEqual(const Point<T>& pt, T epsPow2 = Epsilon::EpsPow2()) const
 		{
 			return DistancePow2(pt) <= epsPow2;
 		}

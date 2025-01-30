@@ -8,19 +8,26 @@ namespace geomlib
 	FLOATING(T)
 	class Cylinder : public Surface<T> {
 	protected:
-		static std::pair<Point<T>, Point<T>> FindPointsOfIntersection(const Cylinder<T>& cyl, const Line<T>& lin) {
+		Vector<T> m_vecDirection;
+		T m_dblRadius;
+		static std::vector<Point<T>> FindPointsOfIntersection(const Cylinder<T>& cyl, const Line<T>& lin) {
 			Point<T> tmp = cyl.ProjectionOf(lin.Start());
+
 			//normal vector from surface to point
 			Vector<T> norm(tmp.X() - lin.Start().X(), tmp.Y() - lin.Start().Y(), tmp.Z() - lin.Start().Z());
+
+			//check if start point of line is inside of cylinder
+			bool inside = (Line<T>(cyl.Start(), cyl.Direction()).DistanceToLine(lin.Start()) < cyl.Radius());
+
 			//angle between normal vector and direction of line
 			T angle = std::min(norm.Angle(lin.Direction()), acos(-1) - norm.Angle(lin.Direction()));
+
 			//discriminant for cos formula
-			T D = cyl.Radius() * cyl.Radius() - (norm.Length() + cyl.Radius()) * (norm.Length() + cyl.Radius()) * sin(angle) * sin(angle);
+			T D = cyl.Radius() * cyl.Radius() - ((inside ? -1 : 1) * norm.Length() + cyl.Radius()) * ((inside ? -1 : 1) * norm.Length() + cyl.Radius()) * sin(angle) * sin(angle);
 
-			if (D < 0) return { Point<T>(NAN, NAN, NAN), Point<T>(NAN, NAN, NAN) };
+			if (D < 0) return std::vector<Point<T>>();
 			D = sqrt(D);
-
-			T len1 = (norm.Length() + cyl.Radius()) * cos(angle);
+			T len1 = ((inside ? -1 : 1) * norm.Length() + cyl.Radius()) * cos(angle);
 			T len2 = len1 + D;
 			len1 -= D;
 			Point<T> ans1 = lin.Start() + lin.Direction().NormalizedCopy() * len1;
@@ -32,19 +39,14 @@ namespace geomlib
 		Cylinder(const Point<T>& pt, const Vector<T>& dir, T radius)
 		{
 			this->m_ptStart = pt;
-			this->m_vecBase = dir.NormalizedCopy() * radius;
+			m_vecDirection = dir.NormalizedCopy();
+			m_dblRadius = radius;
 		}
 
-		inline Vector<T> Direction() const { return this->m_vecBase; }
-		inline T Radius() const { return this->m_vecBase.Length(); }
-		inline void SetDirection(const Vector<T>& dir) { this->m_vecBase = dir.NormalizedCopy() * this->Radius(); }
-		inline void SetRadius(T radius) { this->m_vecBase = this->m_vecBase.NormalizedCopy() * radius; }
-
-		Vector<T> GetNormalInPoint(const Point<T>& pt) const {
-			if (!Belongs(pt)) return Vector<T>(NAN, NAN, NAN);
-			Point<T> proj = Line<T>(this->Start(), this->Direction()).FindNearestPointToLine(pt);
-			return Vector<T>(pt.X() - proj.X(), pt.Y() - proj.Y(), pt.Z() - proj.Z());
-		}
+		inline Vector<T> Direction() const { return m_vecDirection; }
+		inline T Radius() const { return m_dblRadius; }
+		inline void SetDirection(const Vector<T>& dir) { m_vecDirection = dir; m_vecDirection.Normalize(); }
+		inline void SetRadius(T radius) { m_dblRadius = radius; }
 
 		Point<T> ProjectionOf(const Point<T>& pt) const
 		{
@@ -55,50 +57,76 @@ namespace geomlib
 		}
 
 		DERIVED_FROM_LINE(S)
-		bool IsTangent(const S<T>& lin) const
+		bool IsTangent(const S<T>& lin, T eps = Epsilon::Eps()) const
 		{
 			Plane<T> ort(this->Start, lin.Direction());
-			return (Line<T>(this->Start(), this->Direction()).DistanceToLine(ort.FindIntersection(lin)) <= Epsilon::Eps());
+			return (Line<T>(this->Start(), this->Direction()).DistanceToLine(ort.FindIntersection(lin)) <= eps);
 		}
 
 		DERIVED_FROM_LINE(S)
-		bool Intersects(const S<T>& lin) const
+		std::vector<Point<T>> FindIntersections(const S<T>& lin, T eps = Epsilon::Eps()) const
 		{
-			if (this->Direction().IsParallel(lin.Direction())) return false;
+			if (this->Direction().IsParallel(lin.Direction(), eps * eps)) return std::vector<Point<T>>();
+			if (IsTangent(lin)) return { FindTangentIntersection(lin, eps) };
 			auto ans = FindPointsOfIntersection(*this, Line<T>(lin.Start(), lin.Direction()));
-			if (ans.first.X() == NAN) return false;
-			return lin.Belongs(ans.first);
+			std::vector<Point<T>> res;
+			for (auto p : ans) if (lin.Belongs(p)) res.push_back(p);
+			return res;
 		}
 
 		DERIVED_FROM_LINE(S)
-		Point<T> FindTangentIntersection(const S<T>& lin) const
+		std::vector<Point<T>> FindTangentIntersection(const S<T>& lin, T eps = Epsilon::Eps()) const
 		{
-			if (!IsTangent(lin)) return Point<T>(NAN, NAN, NAN);
+			if (!IsTangent(lin, eps)) return std::vector<Point<T>>();
 			Plane<T> ort(this->Start, lin.Direction());
-			return ort.FindIntersection(lin);
+			return ort.FindIntersections(lin);
 		}
 
-		DERIVED_FROM_LINE(S)
-		std::pair<Point<T>, Point<T>> FindIntersections(const S<T>& lin) const
+
+		bool Belongs(const Point<T>& pt, T eps = Epsilon::Eps()) const
 		{
-			if (Intersects(lin)) return FindPointsOfIntersection(*this, Line<T>(lin.Start(), lin.Direction()));
-			return { Point<T>(NAN, NAN, NAN), Point<T>(NAN, NAN, NAN) };
+			return (abs(Line<T>(this->Start(), this->Direction()).DistanceToLine(pt) - this->Radius()) <= eps);
 		}
 
-		bool Belongs(const Point<T>& pt) const
-		{
-			return (abs(this->Direction().DistanceToLine(pt) - this->Radius()) <= Epsilon::Eps);
-		}
-
-		std::pair<T, T> GetParameters(const Point<T>& pt, const Vector<T>& dir, const Vector<T>& zeroAngle) {
-			if (!dir.IsParallel(this->Direction())) return { NAN, NAN };
-			if (!Belongs(pt)) return { NAN, NAN };
-			if (!Belongs(this->Start() + zeroAngle)) return { NAN, NAN };
-			Plane<T> ort(pt, dir);
+		bool GetParameters(const Point<T>& pt, T& param1, T& param2, T eps = Epsilon::Eps()) const {
+			Vector<T> zeroAngle = Direction().GetOrthogonal() * Radius();
+			if (!Belongs(pt)) return false;
+			if (!Belongs(this->Start() + zeroAngle)) return false;
+			Plane<T> ort(pt, Direction());
 			Point<T> tmp = ort.ProjectionOf(this->Start());
-			T t = tmp.Distance(this->Start()) / dir.Length();
-			T s = zeroAngle.Angle(Vector<T>(pt.X() - tmp.X(), pt.Y() - tmp.Y(), pt.Z() - tmp.Z()));
-			return { t, s };
+			param1 = tmp.Distance(this->Start()) / Direction().Length();
+			param2 = zeroAngle.Angle(pt - tmp);
+			if (zeroAngle.CrossProduct(pt - tmp).IsOpposite(Direction(), eps)) param2 = 2 * acos(-1) - param2;
+			return true;
+		}
+
+		Point<T> GetPointByParameters(T param1, T param2) const
+		{
+			param2 -= acos(-1);
+			Vector<T> vec = Direction().GetOrthogonal() * Radius();
+			Vector<T> rot = Direction();
+			T quatw = cos(param2 / 2), quatx = rot.X() * sin(param2 / 2), quaty = rot.Y() * sin(param2 / 2), quatz = rot.Z() * sin(param2 / 2);
+
+			T resw = -quatx * vec.X() - quaty * vec.Y() - quatz * vec.Z();
+			T resx = quatw * vec.X() + quaty * vec.Z() - quatz * vec.Y();
+			T resy = quatw * vec.Y() - quatx * vec.Z() - quatz * vec.X();
+			T resz = quatw * vec.Z() + quatx * vec.Y() - quaty * vec.X();
+
+			quatx = -quatx, quaty = -quaty, quatz = -quatz;
+
+			T ansx = resw * quatx + resx * quatw + resy * quatz - resz * quaty;
+			T ansy = resw * quaty - resx * quatz + resy * quatw - resz * quatx;
+			T ansz = resw * quatz + resx * quaty - resy * quatx + resz * quatw;
+
+			return this->Start() + Vector<T>(ansx, ansy, ansz) + Direction() * param1;
+		}
+
+		bool GetNormalIn(const Point<T>& pt, Vector<T>& norm) const
+		{
+			if (!Belongs(pt)) return false;
+			Point<T> proj = Line<T>(this->Start(), this->Direction()).FindNearestPointToLine(pt);
+			norm = pt - proj;
+			return true;
 		}
 
 	};

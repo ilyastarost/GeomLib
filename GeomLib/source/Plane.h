@@ -7,79 +7,118 @@ namespace geomlib
 	FLOATING(T)
 	class Plane : public Surface<T> {
 	protected:
+		Vector<T> m_vecNormal;
 		static Point<T> FindPointOfIntersection(const Plane<T>& pl, const Line<T>& lin) {
+			if (pl.Belongs(lin.Start())) return lin.Start();
 			Point<T> tmp = pl.ProjectionOf(lin.Start());
-			Vector<T> norm(tmp.X() - lin.Start().X(), tmp.Y() - lin.Start().Y(), tmp.Z() - lin.Start().Z());
-			T param = (norm.X() * norm.X() + norm.Y() * norm.X() + norm.Z() * norm.Z()) /
-				(lin.Direction().X() * norm.X() + lin.Direction().Y() * norm.Y() + lin.Direction().Z() * norm.Z());
-			return Point<T>(lin.Start().X() + param * lin.Direction().X(), lin.Start().Y() + param * lin.Direction().Y(), lin.Start().Z() + param * lin.Direction().Z());
+			Vector<T> norm = tmp - lin.Start();
+			T param = norm.LengthPow2() / lin.Direction().DotProduct(norm);
+			return lin.Start() + param * lin.Direction();
 		}
 
 	public:
 		Plane() : Surface<T>() {};
-		Plane(const Point<T>&pt, const Vector<T>& norm) : Surface<T>(pt, norm) {};
+		Plane(const Point<T>&pt, const Vector<T>& norm) 
+		{
+			this->m_ptStart = pt;
+			m_vecNormal = norm;
+		};
 
-		inline Vector<T> Normal() const { return this->m_vecBase; }
-		inline void SetNormal(const Vector<T>& norm) { this->m_vecBase = norm; }
-
-		std::pair<Vector<T>, Vector<T>> GetBase() const {
-			std::pair<Vector<T>, Vector<T>> ans;
-			ans.first = this->m_vecBase.GetOrthogonal();
-			ans.second = ans.first.CrossProduct(this->m_vecBase);
-			return ans;
-		}
+		inline const Vector<T>& Normal() const { return m_vecNormal; }
+		inline void SetNormal(const Vector<T>& norm) { m_vecNormal = norm; }
 
 		Point<T> ProjectionOf(const Point<T>& pt) const 
 		{
-			T param =  ((this->Start().X() - pt.X()) * Normal().X() +
-						(this->Start().Y() - pt.Y()) * Normal().Y() +
-						(this->Start().Z() - pt.Z()) * Normal().Z()) /
-						(Normal().X() * Normal().X() + Normal().Y() * Normal().Y() + Normal().Z() * Normal().Z());
-			return Point<T>(pt.X() + param * Normal().X(), pt.Y() + param * Normal().Y(), pt.Z() + param * Normal().Z());
+			T param = (this->Start() - pt).DotProduct(Normal()) / Normal().LengthPow2();
+			return pt + param * Normal();
+		}
+
+		Vector<T> ProjectionOf(const Vector<T>& pt) const
+		{
+			T paramb = (this->Start() - Point<T>(0, 0, 0)).DotProduct(Normal()) / Normal().LengthPow2();
+			T parame = (this->Start() - pt).DotProduct(Normal()) / Normal().LengthPow2();
+			return pt + parame * Normal() - paramb * Normal();
 		}
 
 		DERIVED_FROM_LINE(S)
-		bool Intersects(const S<T>& lin) const
+		S<T> ProjectionOf(const S<T>& pt) const
 		{
-			if (AreEqual(0, this->Normal().DotProduct(lin.Direction()))) return false;
+			return S<T>(ProjectionOf(pt.Start()), ProjectionOf(pt.Direction()));
+		}
+
+		DERIVED_FROM_LINE(S)
+		std::vector<Point<T>> FindIntersections(const S<T>& lin, T eps = Epsilon::Eps()) const
+		{
+			if (abs(this->Normal().DotProduct(lin.Direction())) <= eps) return std::vector<Point<T>>();
 			Point<T> pt = FindPointOfIntersection(*this, Line<T>(lin.Start(), lin.Direction()));
-			return lin.Belongs(pt);
+			if (lin.Belongs(pt)) return { pt };
+			return std::vector<Point<T>>();
 		}
 
-		DERIVED_FROM_LINE(S)
-		Point<T> FindIntersection(const S<T>& lin) const
+		bool Belongs(const Point<T>& pt, T eps = Epsilon::Eps()) const
 		{
-			if (Intersects(lin)) return FindPointOfIntersection(*this, Line<T>(lin.Start(), lin.Direction()));
-			return Point<T>(NAN, NAN, NAN);
+			Vector<T> tmp = pt - this->Start();
+			return (abs(tmp.DotProduct(this->Normal())) <= eps);
 		}
 
-		bool Belongs(const Point<T>& pt) const
-		{
-			Vector<T> tmp(pt.X() - this->Start().X(), pt.Y() - this->Start().Y(), pt.Z() - this->Start().Z());
-			return (tmp.DotProduct(this->Normal()) <= Epsilon::Eps());
-		}
-
-		std::pair<T, T> GetParameters(const Point<T>& pt, const Vector<T>& base1, const Vector<T>& base2) {
-			if (!base1.CrossProduct(base2).IsParallel(this->Normal)) return { NAN, NAN };
-			if (!Belongs(pt)) return { NAN, NAN };
-			if (base1.IsParallel(base2)) return { NAN, NAN };
-			if (abs(base1.X() * base2.Y() - base1.Y() * base2.X()) > Epsilon::Eps() && abs(base1.X()) > Epsilon::Eps())
+		bool GetParameters(const Point<T>& pt, T& param1, T& param2, T eps = Epsilon::Eps()) const {
+			Vector<T> base1 = Normal().GetOrthogonal();
+			Vector<T> base2 = Normal().CrossProduct(base1);
+			if (!base1.CrossProduct(base2).IsParallel(this->Normal())) return false;
+			if (!Belongs(pt)) return false;
+			if (abs(base1.X() * base2.Y() - base1.Y() * base2.X()) > eps)
 			{
-				T s = (base1.X() * (pt.Y() - this->Start().Y()) - base1.Y() * (this->Start().X() - pt.X())) / (base1.X() * base2.Y() - base1.Y() * base2.X());
-				T t = (pt.X() - this->Start().X() - base2.X() * s) / base1.X();
-				return { t, s };
+				if (abs(base1.X()) > eps)
+				{
+					param2 = (base1.X() * (pt.Y() - this->Start().Y()) - base1.Y() * (pt.X() - this->Start().X())) / (base1.X() * base2.Y() - base1.Y() * base2.X());
+					param1 = (pt.X() - this->Start().X() - base2.X() * param2) / base1.X();
+				}
+				else 
+				{
+					param2 = (base1.Y() * (pt.X() - this->Start().X()) - base1.X() * (pt.Y() - this->Start().Y())) / (base1.Y() * base2.X() - base1.X() * base2.Y());
+					param1 = (pt.Y() - this->Start().Y() - base2.Y() * param2) / base1.Y();
+				}
 			}
-			else if (abs(base1.Y() * base2.Z() - base1.Z() * base2.Y()) > Epsilon::Eps() && abs(base1.Y()) > Epsilon::Eps())
+			else if (abs(base1.Y() * base2.Z() - base1.Z() * base2.Y()) > eps)
 			{
-				T s = (base1.Y() * (pt.Z() - this->Start().Z()) - base1.Z() * (this->Start().Y() - pt.Y())) / (base1.Y() * base2.Z() - base1.Z() * base2.Y());
-				T t = (pt.Y() - this->Start().Y() - base2.Y() * s) / base1.Y();
-				return { t, s };
+				if (abs(base1.Y()) > eps)
+				{
+					param2 = (base1.Y() * (pt.Z() - this->Start().Z()) - base1.Z() * (pt.Y() - this->Start().Y())) / (base1.Y() * base2.Z() - base1.Z() * base2.Y());
+					param1 = (pt.Y() - this->Start().Y() - base2.Y() * param2) / base1.Y();
+				}
+				else
+				{
+					param2 = (base1.Z() * (pt.Y() - this->Start().Y()) - base1.Y() * (pt.Z() - this->Start().Z())) / (base1.Z() * base2.Y() - base1.Y() * base2.Z());
+					param1 = (pt.Z() - this->Start().Z() - base2.Z() * param2) / base1.Z();
+				}
 			}
 			else {
-				T s = (base1.Z() * (pt.X() - this->Start().X()) - base1.X() * (this->Start().Z() - pt.Z())) / (base1.Z() * base2.X() - base1.X() * base2.Z());
-				T t = (pt.Z() - this->Start().Z() - base2.Z() * s) / base1.Z();
-				return { t, s };
+				if (abs(base1.Z()) > eps)
+				{
+					param2 = (base1.Z() * (pt.X() - this->Start().X()) - base1.X() * (pt.Z() - this->Start().Z())) / (base1.Z() * base2.X() - base1.X() * base2.Z());
+					param1 = (pt.Z() - this->Start().Z() - base2.Z() * param2) / base1.Z();
+				}
+				else
+				{
+					param2 = (base1.X() * (pt.Z() - this->Start().Z()) - base1.Z() * (pt.X() - this->Start().X())) / (base1.X() * base2.Z() - base1.Z() * base2.X());
+					param1 = (pt.X() - this->Start().X() - base2.X() * param2) / base1.X();
+				}
 			}
+			return true;
+		}
+
+		Point<T> GetPointByParameters(T param1, T param2) const
+		{
+			Vector<T> base1 = Normal().GetOrthogonal();
+			Vector<T> base2 = Normal().CrossProduct(base1);
+			return this->Start() + base1 * param1 + base2 * param2;
+		}
+
+		bool GetNormalIn(const Point<T>& pt, Vector<T>& norm) const
+		{
+			if (!Belongs(pt)) return false;
+			norm = m_vecNormal;
+			return true;
 		}
 
 	};

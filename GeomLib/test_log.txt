@@ -69,3 +69,15 @@ Test "Points of intersection" results:
 	Subtest "Same start point RR intersection": OK
 	Subtest "Same start point RS intersection": OK
 	Subtest "Same start point SS intersection": OK
+Test "Surfaces" results:
+	Subtest "Plane parameters 1": OK
+	Subtest "Plane parameters 2": OK
+	Subtest "Plane parameters 3": OK
+	Subtest "Cylinder parameters 1": OK
+	Subtest "Cylinder parameters 2": OK
+	Subtest "Cylinder parameters 3": OK
+	Subtest "Plane intersects line": OK
+	Subtest "Plane intersects ray": OK
+	Subtest "Plane intersects segment": OK
+	Subtest "Plane doesn't intersect ray": OK
+	Subtest "Plane doesn't intersect segment": OK

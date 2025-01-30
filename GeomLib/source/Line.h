@@ -11,9 +11,7 @@ namespace geomlib
 		Vector<T> m_vecDirection;
 		T GetParameter(const Point<T>& pt) const
 		{
-			return ((pt.X() - m_ptStart.X()) * m_vecDirection.X() +
-					(pt.Y() - m_ptStart.Y()) * m_vecDirection.Y() +
-					(pt.Z() - m_ptStart.Z()) * m_vecDirection.Z()) /
+			return (pt - m_ptStart).DotProduct(m_vecDirection) /
 					(m_vecDirection.X() * m_vecDirection.X() +
 					 m_vecDirection.Y() * m_vecDirection.Y() +
 					 m_vecDirection.Z() * m_vecDirection.Z());
@@ -38,9 +36,7 @@ namespace geomlib
 
 		virtual Point<T> FindNearestPointToLine(const Point<T>& pt) const {
 			T param = this->GetParameter(pt);
-			return Point<T>(this->m_ptStart.X() + param * this->m_vecDirection.X(),
-							this->m_ptStart.Y() + param * this->m_vecDirection.Y(),
-							this->m_ptStart.Z() + param * this->m_vecDirection.Z());
+			return this->m_ptStart + param * this->m_vecDirection;
 		}
 		virtual Point<T> FindNearestPointToThis(const Point<T>& pt) const {
 			return FindNearestPointToLine(pt);
@@ -62,11 +58,11 @@ namespace geomlib
 			return pt.DistancePow2(FindNearestPointToThis(pt));
 		}
 		DERIVED_FROM_LINE(S)
-		bool IsCollinear(const S<T>& lin) const
+		bool IsCollinear(const S<T>& lin, T eps = Epsilon::Eps()) const
 		{
 			T dist = DistanceToLinePow2(lin.Start());
 			T ang = this->m_vecDirection.Angle(lin.Direction());
-			return (dist <= Epsilon::EpsPow2() && (abs(ang) <= Epsilon::Eps() || abs(ang - acos(-1)) <= Epsilon::Eps()));
+			return (dist <= eps * eps && (abs(ang) <= eps || abs(ang - acos(-1)) <= eps));
 		}
 
 		DERIVED_FROM_LINE(S)
@@ -82,12 +78,10 @@ namespace geomlib
 		}
 
 		DERIVED_FROM_LINE(S)
-		bool Intersects(const S<T>& lin) const
+		bool Intersects(const S<T>& lin, T eps = Epsilon::Eps()) const
 		{
-			Vector<T> tmp(m_ptStart.X() - lin.Start().X(),
-						  m_ptStart.Y() - lin.Start().Y(),
-						  m_ptStart.Z() - lin.Start().Z());
-			if (abs(tmp.DotProduct(lin.Direction().CrossProduct(m_vecDirection))) <= Epsilon::Eps())
+			Vector<T> tmp = m_ptStart - lin.Start();
+			if (abs(tmp.DotProduct(lin.Direction().CrossProduct(m_vecDirection))) <= eps)
 			{
 				if (IsCollinear(lin)) {
 					if (this->Belongs(lin.Start()) || lin.Belongs(m_ptStart)) return true;
@@ -114,6 +108,10 @@ namespace geomlib
 		bool Belongs(const Point<T>& pt) const
 		{
 			return DistanceToThisPow2(pt) <= Epsilon::EpsPow2();
+		}
+
+		Line<T> AsLine() const {
+			return Line<T>(m_ptStart, m_vecDirection);
 		}
 	};
 }

@@ -12,7 +12,7 @@ namespace geomlib
 		Segment(Point<T> pt1, Point<T> pt2)
 		{
 			this->m_ptStart = pt1;
-			this->m_vecDirection = Vector<T>(pt2.X() - pt1.X(), pt2.Y() - pt1.Y(), pt2.Z() - pt1.Z());
+			this->m_vecDirection = pt2 - pt1;
 		}
 		bool operator== (const Segment<T>& rhs) const
 		{
@@ -26,9 +26,7 @@ namespace geomlib
 			T param = this->GetParameter(pt);
 			if (param < 0) param = 0;
 			else if (param > 1) param = 1;
-			return Point<T>(this->m_ptStart.X() + param * this->m_vecDirection.X(),
-				this->m_ptStart.Y() + param * this->m_vecDirection.Y(),
-				this->m_ptStart.Z() + param * this->m_vecDirection.Z());
+			return this->m_ptStart + param * this->m_vecDirection;
 		}
 	};
 }

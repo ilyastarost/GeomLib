@@ -1,10 +1,12 @@
+#include "source/Cylinder.h"
 #include "source/Testing.h"
 #include "source/Segment.h"
-#include "source/Cylinder.h"
 #include "source/Plane.h"
 #include "source/Line.h"
 #include "source/Ray.h"
 #include <iostream>
+
+using namespace geomlib;
 
 int main()
 {
@@ -152,11 +154,34 @@ int main()
 	SUBTEST_ASSERT("Same start point RS intersection", r1.Belongs(r1.FindIntersection(s2)) && s2.Belongs(r1.FindIntersection(s2)));
 	SUBTEST_ASSERT("Same start point SS intersection", s1.Belongs(s1.FindIntersection(s2)) && s2.Belongs(s1.FindIntersection(s2)));
 
-	TESTING_SECTION_CLOSE;
 
-	geomlib::Line<double> a(geomlib::Point<double>(-4, -2, 0), geomlib::Vector<double>(1, 1, 0));
-	geomlib::Cylinder<double> q(geomlib::Point<double>(0, 0, 0), geomlib::Vector<double>(0, 0, 1), 2);
-	auto w = q.FindIntersections(a);
-	int y = 0;
+	TEST("Surfaces");
+
+	p1 = geomlib::Point<double>(0, 0, 0); p2 = geomlib::Point<double>(-4, -2, 2);
+	v1 = geomlib::Vector<double>(0, 0, 1); v2 = geomlib::Vector<double>(0, 3, -3);
+	l1 = geomlib::Line<double>(p2, v2);
+	r1 = geomlib::Ray<double>(p2, v2);
+	s1 = geomlib::Segment<double>(p2, v2);
+	geomlib::Cylinder<double> c1(p1, v1, 2);
+	geomlib::Plane<double> pl(p1, v1);
+	double u, v;
+	SUBTEST_ASSERT("Plane parameters 1", !pl.GetParameters(Point<double>(4, 1, -1), u, v));
+	SUBTEST_ASSERT("Plane parameters 2", pl.GetParameters(Point<double>(4, 1, 0), u, v));
+	SUBTEST_ASSERT("Plane parameters 3", pl.GetPointByParameters(u, v) == Point<double>(4, 1, 0));
+	SUBTEST_ASSERT("Cylinder parameters 1", c1.GetParameters(Point<double>(2, 0, 4), u, v));
+	SUBTEST_ASSERT("Cylinder parameters 2", u == 4 && v == acos(-1) / 2);
+	auto q = c1.GetPointByParameters(u, v);
+	SUBTEST_ASSERT("Cylinder parameters 3", q == Point<double>(2, 0, 4));
+
+	SUBTEST_ASSERT("Plane intersects line", pl.FindIntersections(l1)[0] == Point<double>(-4, 0, 0));
+	SUBTEST_ASSERT("Plane intersects ray", pl.FindIntersections(r1)[0] == Point<double>(-4, 0, 0));
+	SUBTEST_ASSERT("Plane intersects segment", pl.FindIntersections(s1)[0] == Point<double>(-4, 0, 0));
+
+	r1 = geomlib::Ray<double>(p2, v2.Opposite());
+	s1 = geomlib::Segment<double>(p2, v2.Opposite());
+	SUBTEST_ASSERT("Plane doesn't intersect ray", pl.FindIntersections(r1).size() == 0);
+	SUBTEST_ASSERT("Plane doesn't intersect segment", pl.FindIntersections(s1).size() == 0);
+
+	TESTING_SECTION_CLOSE;
 
 }
