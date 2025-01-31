@@ -63,6 +63,30 @@ namespace geomlib
 			if (Length() != 0 && vec.Length() != 0) return std::acos(DotProduct(vec) / Length() / vec.Length());
 			return 0;
 		}
+		T FullAngle(const Vector<T>& vec, const Vector<T>& axis) const
+		{
+			T res = Angle(vec);
+			if (CrossProduct(vec).IsOpposite(axis)) res = 2 * acos(-1) - res;
+			return res;
+		}
+		Vector<T> Rotate(const Vector<T>& axis, T angle) {
+			Vector<T> rot = axis.NormalizedCopy();
+			angle -= acos(-1);
+			T quatw = cos(angle / 2), quatx = rot.X() * sin(angle / 2), quaty = rot.Y() * sin(angle / 2), quatz = rot.Z() * sin(angle / 2);
+
+			T resw = -quatx * this->X() - quaty * this->Y() - quatz * this->Z();
+			T resx = quatw * this->X() + quaty * this->Z() - quatz * this->Y();
+			T resy = quatw * this->Y() - quatx * this->Z() - quatz * this->X();
+			T resz = quatw * this->Z() + quatx * this->Y() - quaty * this->X();
+
+			quatx = -quatx, quaty = -quaty, quatz = -quatz;
+
+			T ansx = resw * quatx + resx * quatw + resy * quatz - resz * quaty;
+			T ansy = resw * quaty - resx * quatz + resy * quatw - resz * quatx;
+			T ansz = resw * quatz + resx * quaty - resy * quatx + resz * quatw;
+
+			return Vector<T>(ansx, ansy, ansz);
+		}
 		T DotProduct(const Vector<T>& vec) const
 		{
 			return this->X() * vec.X() + this->Y() * vec.Y() + this->Z() * vec.Z();

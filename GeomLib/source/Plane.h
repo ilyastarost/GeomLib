@@ -49,9 +49,11 @@ namespace geomlib
 		DERIVED_FROM_LINE(S)
 		std::vector<Point<T>> FindIntersections(const S<T>& lin, T eps = Epsilon::Eps()) const
 		{
-			if (abs(this->Normal().DotProduct(lin.Direction())) <= eps) return std::vector<Point<T>>();
-			Point<T> pt = FindPointOfIntersection(*this, Line<T>(lin.Start(), lin.Direction()));
-			if (lin.Belongs(pt)) return { pt };
+			if (abs(this->Normal().DotProduct(lin.Direction())) <= eps) 
+				return std::vector<Point<T>>();
+			Point<T> pt = FindPointOfIntersection(*this, lin.AsLine());
+			if (lin.Belongs(pt)) 
+				return { pt };
 			return std::vector<Point<T>>();
 		}
 
@@ -64,46 +66,13 @@ namespace geomlib
 		bool GetParameters(const Point<T>& pt, T& param1, T& param2, T eps = Epsilon::Eps()) const {
 			Vector<T> base1 = Normal().GetOrthogonal();
 			Vector<T> base2 = Normal().CrossProduct(base1);
-			if (!base1.CrossProduct(base2).IsParallel(this->Normal())) return false;
-			if (!Belongs(pt)) return false;
-			if (abs(base1.X() * base2.Y() - base1.Y() * base2.X()) > eps)
-			{
-				if (abs(base1.X()) > eps)
-				{
-					param2 = (base1.X() * (pt.Y() - this->Start().Y()) - base1.Y() * (pt.X() - this->Start().X())) / (base1.X() * base2.Y() - base1.Y() * base2.X());
-					param1 = (pt.X() - this->Start().X() - base2.X() * param2) / base1.X();
-				}
-				else 
-				{
-					param2 = (base1.Y() * (pt.X() - this->Start().X()) - base1.X() * (pt.Y() - this->Start().Y())) / (base1.Y() * base2.X() - base1.X() * base2.Y());
-					param1 = (pt.Y() - this->Start().Y() - base2.Y() * param2) / base1.Y();
-				}
-			}
-			else if (abs(base1.Y() * base2.Z() - base1.Z() * base2.Y()) > eps)
-			{
-				if (abs(base1.Y()) > eps)
-				{
-					param2 = (base1.Y() * (pt.Z() - this->Start().Z()) - base1.Z() * (pt.Y() - this->Start().Y())) / (base1.Y() * base2.Z() - base1.Z() * base2.Y());
-					param1 = (pt.Y() - this->Start().Y() - base2.Y() * param2) / base1.Y();
-				}
-				else
-				{
-					param2 = (base1.Z() * (pt.Y() - this->Start().Y()) - base1.Y() * (pt.Z() - this->Start().Z())) / (base1.Z() * base2.Y() - base1.Y() * base2.Z());
-					param1 = (pt.Z() - this->Start().Z() - base2.Z() * param2) / base1.Z();
-				}
-			}
-			else {
-				if (abs(base1.Z()) > eps)
-				{
-					param2 = (base1.Z() * (pt.X() - this->Start().X()) - base1.X() * (pt.Z() - this->Start().Z())) / (base1.Z() * base2.X() - base1.X() * base2.Z());
-					param1 = (pt.Z() - this->Start().Z() - base2.Z() * param2) / base1.Z();
-				}
-				else
-				{
-					param2 = (base1.X() * (pt.Z() - this->Start().Z()) - base1.Z() * (pt.X() - this->Start().X())) / (base1.X() * base2.Z() - base1.Z() * base2.X());
-					param1 = (pt.X() - this->Start().X() - base2.X() * param2) / base1.X();
-				}
-			}
+			Matrix<double> tmp;
+			Matrix<double>::ToCoordinatesInit(base1, base2, Normal(), tmp);
+			Point<T> ans = pt * tmp;
+			if (abs(ans.Z()) > eps) 
+				return false;
+			param1 = ans.X();
+			param2 = ans.Y();
 			return true;
 		}
 

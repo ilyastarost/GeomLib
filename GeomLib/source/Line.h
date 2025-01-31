@@ -87,7 +87,7 @@ namespace geomlib
 					if (this->Belongs(lin.Start()) || lin.Belongs(m_ptStart)) return true;
 					return false;
 				}
-				Point<T> ans = FindPointOfIntersection(Line<T>(m_ptStart, m_vecDirection), Line<T>(lin.Start(), lin.Direction()));
+				Point<T> ans = FindPointOfIntersection(AsLine(), lin.AsLine());
 				return (Belongs(ans) && lin.Belongs(ans));
 			}
 			return false;
@@ -101,7 +101,7 @@ namespace geomlib
 				else if (lin.Belongs(m_ptStart)) return m_ptStart;
 				return Point<T>(NAN, NAN);
 			}
-			if (Intersects(lin)) return FindPointOfIntersection(Line<T>(m_ptStart, m_vecDirection), Line<T>(lin.Start(), lin.Direction()));
+			if (Intersects(lin)) return FindPointOfIntersection(AsLine(), lin.AsLine());
 			return Point<T>(NAN, NAN);
 		}
 

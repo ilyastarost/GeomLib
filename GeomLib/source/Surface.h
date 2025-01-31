@@ -1,6 +1,7 @@
 #pragma once
 #include "Generic.h"
 #include "Segment.h"
+#include "Matrix.h"
 #include "Line.h"
 #include "Ray.h"
 #include <vector>

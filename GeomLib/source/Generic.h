@@ -1,12 +1,11 @@
 #pragma once
-#include "Coordinates.h"
 #include "Epsilon.h"
 #include "Vector.h"
-#include "Point.h"
 #include <type_traits>
 #include <cmath>
 
 #define DERIVED_FROM_COORDINATES(S, T) template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Coordinates<T>, S<T>>()), int>::type = 0>
+#define DERIVED_FROM_COORDINATES_FRIEND(S, T) template <typename T, template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S>
 #define DERIVED_FROM_LINE(S) template <template<typename, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0> typename S, typename std::enable_if<(std::is_base_of<Line<T>, S<T>>()), int>::type = 0>
 
 namespace geomlib

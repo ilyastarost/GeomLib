@@ -1,6 +1,7 @@
 #include "source/Cylinder.h"
 #include "source/Testing.h"
 #include "source/Segment.h"
+#include "source/Matrix.h"
 #include "source/Plane.h"
 #include "source/Line.h"
 #include "source/Ray.h"
@@ -183,5 +184,10 @@ int main()
 	SUBTEST_ASSERT("Plane doesn't intersect segment", pl.FindIntersections(s1).size() == 0);
 
 	TESTING_SECTION_CLOSE;
+
+	geomlib::Matrix<double> m;
+	m.TranslationInit(v2);
+	p1 = p1 * m;
+	int y = 0;
 
 }

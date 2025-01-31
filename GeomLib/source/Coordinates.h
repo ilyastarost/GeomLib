@@ -3,6 +3,7 @@
 #include <iterator>
 
 #define FLOATING(T) template <typename T, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
+#define FLOATING(V) template <typename V, typename std::enable_if<(std::is_floating_point<V>()), int>::type = 0>
 
 namespace geomlib
 {

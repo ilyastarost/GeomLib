@@ -89,36 +89,19 @@ namespace geomlib
 		}
 
 		bool GetParameters(const Point<T>& pt, T& param1, T& param2, T eps = Epsilon::Eps()) const {
-			Vector<T> zeroAngle = Direction().GetOrthogonal() * Radius();
 			if (!Belongs(pt)) return false;
-			if (!Belongs(this->Start() + zeroAngle)) return false;
+			Vector<T> zeroAngle = Direction().GetOrthogonal() * Radius();
 			Plane<T> ort(pt, Direction());
 			Point<T> tmp = ort.ProjectionOf(this->Start());
 			param1 = tmp.Distance(this->Start()) / Direction().Length();
-			param2 = zeroAngle.Angle(pt - tmp);
-			if (zeroAngle.CrossProduct(pt - tmp).IsOpposite(Direction(), eps)) param2 = 2 * acos(-1) - param2;
+			param2 = zeroAngle.FullAngle(pt - tmp, Direction());
 			return true;
 		}
 
 		Point<T> GetPointByParameters(T param1, T param2) const
 		{
-			param2 -= acos(-1);
 			Vector<T> vec = Direction().GetOrthogonal() * Radius();
-			Vector<T> rot = Direction();
-			T quatw = cos(param2 / 2), quatx = rot.X() * sin(param2 / 2), quaty = rot.Y() * sin(param2 / 2), quatz = rot.Z() * sin(param2 / 2);
-
-			T resw = -quatx * vec.X() - quaty * vec.Y() - quatz * vec.Z();
-			T resx = quatw * vec.X() + quaty * vec.Z() - quatz * vec.Y();
-			T resy = quatw * vec.Y() - quatx * vec.Z() - quatz * vec.X();
-			T resz = quatw * vec.Z() + quatx * vec.Y() - quaty * vec.X();
-
-			quatx = -quatx, quaty = -quaty, quatz = -quatz;
-
-			T ansx = resw * quatx + resx * quatw + resy * quatz - resz * quaty;
-			T ansy = resw * quaty - resx * quatz + resy * quatw - resz * quatx;
-			T ansz = resw * quatz + resx * quaty - resy * quatx + resz * quatw;
-
-			return this->Start() + Vector<T>(ansx, ansy, ansz) + Direction() * param1;
+			return this->Start() + vec.Rotate(Direction(), param2) + Direction() * param1;
 		}
 
 		bool GetNormalIn(const Point<T>& pt, Vector<T>& norm) const
