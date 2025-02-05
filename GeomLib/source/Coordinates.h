@@ -1,6 +1,8 @@
 #pragma once
 #include <type_traits>
 #include <iterator>
+#include <iostream>
+#include <sstream>
 
 #define FLOATING(T) template <typename T, typename std::enable_if<(std::is_floating_point<T>()), int>::type = 0>
 #define FLOATING(V) template <typename V, typename std::enable_if<(std::is_floating_point<V>()), int>::type = 0>
@@ -40,5 +42,28 @@ namespace geomlib
 			return IsEqual(*this, rhs);
 		}
 		~Coordinates() {};
+
+		virtual std::string ToString() const
+		{
+			std::stringstream out;
+			out << "        X = " << m_dblX << std::endl;
+			out << "        Y = " << m_dblY << std::endl;
+			out << "        Z = " << m_dblZ << std::endl;
+			return out.str();
+		}
+
+		void Serialize(std::ostream& out) const
+		{
+			out.write((char*)&m_dblX, sizeof(T));
+			out.write((char*)&m_dblY, sizeof(T));
+			out.write((char*)&m_dblZ, sizeof(T));
+		}
+
+		void Deserialize(std::istream& in)
+		{
+			in.read((char*)&this->m_dblX, sizeof(T));
+			in.read((char*)&this->m_dblY, sizeof(T));
+			in.read((char*)&this->m_dblZ, sizeof(T));
+		}
 	};
 }

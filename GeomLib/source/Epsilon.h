@@ -1,4 +1,6 @@
 #pragma once
+#include <cmath>
+
 namespace geomlib
 {
 	class Epsilon {
@@ -18,6 +20,10 @@ namespace geomlib
 		static double EpsPow2()
 		{
 			return epsPow2;
+		}
+		static bool IsZero(double num)
+		{
+			return abs(num) <= eps;
 		}
 	};
 

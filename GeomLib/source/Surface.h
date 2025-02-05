@@ -27,10 +27,12 @@ namespace geomlib
 
 		virtual Point<T> ProjectionOf(const Point<T>& pt) const = 0;
 
+		//Returns false if pt is not on surface, else assigns parameters of pt to param1 & param2
 		virtual bool GetParameters(const Point<T>& pt, T& param1, T& param2, T eps = Epsilon::Eps()) const = 0;
 
 		virtual Point<T> GetPointByParameters(T param1, T param2) const = 0;
 
+		//Returns false if pt is not on surface, else assigns normal vector to norm
 		virtual bool GetNormalIn(const Point<T>& pt, Vector<T>& norm) const = 0;
 
 	};

@@ -28,5 +28,26 @@ namespace geomlib
 			else if (param > 1) param = 1;
 			return this->m_ptStart + param * this->m_vecDirection;
 		}
+		std::string ToString() const
+		{
+			std::stringstream out;
+			out << "Segment with start point: ";
+			out << this->m_ptStart.ToString();
+			out << "    And end point: ";
+			out << (this->m_ptStart + this->m_vecDirection).ToString();
+			return out.str();
+		}
+		void Serialize(std::ostream& out) const
+		{
+			this->m_ptStart.Serialize(out);
+			(this->m_ptStart + this->m_vecDirection).Serialize(out);
+		}
+		void Deserialize(std::istream& in)
+		{
+			this->m_ptStart.Deserialize(in);
+			Point<T> end;
+			end.Deserialize(in);
+			this->m_vecDirection = end - this->m_ptStart;
+		}
 	};
 }

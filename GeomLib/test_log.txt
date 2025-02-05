@@ -81,3 +81,18 @@ Test "Surfaces" results:
 	Subtest "Plane intersects segment": OK
 	Subtest "Plane doesn't intersect ray": OK
 	Subtest "Plane doesn't intersect segment": OK
+Test "Matrices" results:
+	Subtest "Translate point": OK
+	Subtest "Rotate point around X": OK
+	Subtest "Rotate point on axis around X": OK
+	Subtest "Rotate point around vector": OK
+	Subtest "Rotate point on axis around vector": OK
+	Subtest "Scale point": OK
+	Subtest "Scale zero": OK
+	Subtest "Point to new coordinates 1": OK
+	Subtest "Point to new coordinates 2": OK
+	Subtest "Zero to new coordinates": OK
+	Subtest "Rotation around X + new coordinates": OK
+	Subtest "Rotation around vector + new coordinates": OK
+	Subtest "Translation + new coordinates": OK
+	Subtest "Invertion": OK

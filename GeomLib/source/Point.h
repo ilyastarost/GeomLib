@@ -33,5 +33,23 @@ namespace geomlib
 			return (this->X() - vec.X()) * (this->X() - vec.X()) + (this->Y() - vec.Y()) * (this->Y() - vec.Y()) + (this->Z() - vec.Z()) * (this->Z() - vec.Z());
 		}
 		~Point() {};
+
+		std::string ToString() const
+		{
+			std::stringstream out;
+			out << "Point (" << typeid(T).name() << ") with:" << std::endl;
+			out << Coordinates<T>::ToString();
+			return out.str();
+		}
+
+		void Serialize(std::ostream& out) const
+		{
+			Coordinates<T>::Serialize(out);
+		}
+
+		void Deserialize(std::istream& in)
+		{
+			Coordinates<T>::Deserialize(in);
+		}
 	};
 }

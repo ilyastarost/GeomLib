@@ -69,8 +69,10 @@ namespace geomlib
 			if (CrossProduct(vec).IsOpposite(axis)) res = 2 * acos(-1) - res;
 			return res;
 		}
-		Vector<T> Rotate(const Vector<T>& axis, T angle) {
+		Vector<T> Rotate(const Vector<T>& axis, T angle) const {
+			//rotating vector with quaternions around axis
 			Vector<T> rot = axis.NormalizedCopy();
+			//angle should be in [-pi, pi]
 			angle -= acos(-1);
 			T quatw = cos(angle / 2), quatx = rot.X() * sin(angle / 2), quaty = rot.Y() * sin(angle / 2), quatz = rot.Z() * sin(angle / 2);
 
@@ -116,11 +118,29 @@ namespace geomlib
 		}
 		Vector<T> GetOrthogonal(T eps = Epsilon::Eps()) const {
 			if (abs(this->X()) > eps) {
-				return Vector<T>(this->Y(), -this->X(), 0);
+				return Vector<T>(this->Y(), -this->X(), 0).Normalize();
 			}
-			return Vector<T>(0, this->Z(), -this->Y());
+			return Vector<T>(0, this->Z(), -this->Y()).Normalize();
 		}
 		~Vector() {};
+
+		std::string ToString() const
+		{
+			std::stringstream out;
+			out << "Vector (" << typeid(T).name() << ") with:" << std::endl;
+			out << Coordinates<T>::ToString();
+			return out.str();
+		}
+
+		void Serialize(std::ostream& out) const
+		{
+			Coordinates<T>::Serialize(out);
+		}
+
+		void Deserialize(std::istream& in)
+		{
+			Coordinates<T>::Deserialize(in);
+		}
 	};
 
 	FLOATING_AND_ARITHMETIC(T, N)

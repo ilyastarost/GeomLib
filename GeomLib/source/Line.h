@@ -1,5 +1,6 @@
 #pragma once
 #include "Generic.h"
+#include <vector>
 
 namespace geomlib
 {
@@ -11,10 +12,7 @@ namespace geomlib
 		Vector<T> m_vecDirection;
 		T GetParameter(const Point<T>& pt) const
 		{
-			return (pt - m_ptStart).DotProduct(m_vecDirection) /
-					(m_vecDirection.X() * m_vecDirection.X() +
-					 m_vecDirection.Y() * m_vecDirection.Y() +
-					 m_vecDirection.Z() * m_vecDirection.Z());
+			return (pt - m_ptStart).DotProduct(m_vecDirection) / m_vecDirection.LengthPow2();
 		}
 		static Point<T> FindPointOfIntersection(const Line<T>& lin1, const Line<T>& lin2) {
 			T m = (lin1.Direction().X() * (lin1.Start().Y() - lin2.Start().Y()) +
@@ -81,10 +79,11 @@ namespace geomlib
 		bool Intersects(const S<T>& lin, T eps = Epsilon::Eps()) const
 		{
 			Vector<T> tmp = m_ptStart - lin.Start();
+			//check if lin lies in one plane with this
 			if (abs(tmp.DotProduct(lin.Direction().CrossProduct(m_vecDirection))) <= eps)
 			{
 				if (IsCollinear(lin)) {
-					if (this->Belongs(lin.Start()) || lin.Belongs(m_ptStart)) return true;
+					if (Belongs(lin.Start()) || lin.Belongs(m_ptStart)) return true;
 					return false;
 				}
 				Point<T> ans = FindPointOfIntersection(AsLine(), lin.AsLine());
@@ -94,15 +93,15 @@ namespace geomlib
 		}
 
 		DERIVED_FROM_LINE(S)
-		Point<T> FindIntersection(const S<T>& lin) const
+		std::vector<Point<T>> FindIntersections(const S<T>& lin, T eps = Epsilon::Eps()) const
 		{
 			if (IsCollinear(lin)) {
-				if (Belongs(lin.Start())) return lin.Start();
-				else if (lin.Belongs(m_ptStart)) return m_ptStart;
-				return Point<T>(NAN, NAN);
+				if (Belongs(lin.Start())) return { lin.Start() };
+				else if (lin.Belongs(m_ptStart)) return { m_ptStart };
+				return std::vector<Point<T>>();
 			}
-			if (Intersects(lin)) return FindPointOfIntersection(AsLine(), lin.AsLine());
-			return Point<T>(NAN, NAN);
+			if (Intersects(lin)) return { FindPointOfIntersection(AsLine(), lin.AsLine()) };
+			return std::vector<Point<T>>();
 		}
 
 		bool Belongs(const Point<T>& pt) const
@@ -112,6 +111,27 @@ namespace geomlib
 
 		Line<T> AsLine() const {
 			return Line<T>(m_ptStart, m_vecDirection);
+		}
+
+		std::string ToString() const
+		{
+			std::stringstream out;
+			out << "Line with start point: ";
+			out << m_ptStart.ToString();
+			out << "    And direction: ";
+			out << m_vecDirection.ToString();
+			return out.str();
+		}
+		void Serialize(std::ostream& out) const
+		{
+			m_ptStart.Serialize(out);
+			m_vecDirection.Serialize(out);
+		}
+
+		void Deserialize(std::istream& in)
+		{
+			m_ptStart.Deserialize(in);
+			m_vecDirection.Deserialize(in);
 		}
 	};
 }
