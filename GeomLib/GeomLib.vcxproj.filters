@@ -60,6 +60,9 @@
     <ClInclude Include="source\Arc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\TessModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeomLib.cpp">

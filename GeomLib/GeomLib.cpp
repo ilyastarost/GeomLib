@@ -1,8 +1,8 @@
+#include "source/TessModel.h"
 #include "source/Cylinder.h"
 #include "source/Testing.h"
 #include "source/Segment.h"
 #include "source/Matrix.h"
-#include "source/Plane.h"
 #include "source/Line.h"
 #include "source/Ray.h"
 #include <iostream>
@@ -240,5 +240,12 @@ int main()
 	r1.Deserialize(bin);
 	s1.Deserialize(bin);
 	tmp.Deserialize(bin);
+
+	TessModel<double> mm;
+	std::vector<Point<double>> pts = { Point<double>(1, 2, 3), Point<double>(0, 4, 1), Point<double>(0, 1, 8), Point<double>(1, 2, 3) };
+	std::vector<Triangle> tt = { {0, 1, 2} };
+	mm.AddSurface(pts, tt);
+	auto qqq = mm.GetPointsOfTriangle(0);
+	auto gf = qqq[2];
 	int y = 0;
 }

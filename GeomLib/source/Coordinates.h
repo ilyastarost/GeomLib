@@ -54,7 +54,7 @@ namespace geomlib
 
 		void Serialize(std::ostream& out) const
 		{
-			out.write((char*)&m_dblX, sizeof(T));
+			out.write((char*)&m_dblX, 3*sizeof(T));
 			out.write((char*)&m_dblY, sizeof(T));
 			out.write((char*)&m_dblZ, sizeof(T));
 		}

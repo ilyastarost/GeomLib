@@ -41,15 +41,17 @@ namespace geomlib
             return res;
         }
 
-        static Matrix<T> GetZero()
+        static const Matrix<T>& GetZero()
         {
-            return Matrix<T>();
+            static Matrix<T> mtxZero;
+            return mtxZero;
         }
 
-        static Matrix<T> GetIdentity()
+        static const Matrix<T>& GetIdentity()
         {
-            T forId[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-            return Matrix<T>(forId);
+            static T forId[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+            static Matrix<T> mtxId (forId);
+            return mtxId;
         }
 
 		Matrix<T> InvertedCopy() const

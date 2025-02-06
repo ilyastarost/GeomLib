@@ -155,6 +155,7 @@
     <ClInclude Include="source\Ray.h" />
     <ClInclude Include="source\Segment.h" />
     <ClInclude Include="source\Surface.h" />
+    <ClInclude Include="source\TessModel.h" />
     <ClInclude Include="source\Testing.h" />
     <ClInclude Include="source\Vector.h" />
   </ItemGroup>

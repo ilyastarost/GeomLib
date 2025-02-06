@@ -34,22 +34,12 @@ namespace geomlib
 		}
 		~Point() {};
 
-		std::string ToString() const
+		std::string ToString() const override
 		{
 			std::stringstream out;
 			out << "Point (" << typeid(T).name() << ") with:" << std::endl;
 			out << Coordinates<T>::ToString();
 			return out.str();
-		}
-
-		void Serialize(std::ostream& out) const
-		{
-			Coordinates<T>::Serialize(out);
-		}
-
-		void Deserialize(std::istream& in)
-		{
-			Coordinates<T>::Deserialize(in);
 		}
 	};
 }
