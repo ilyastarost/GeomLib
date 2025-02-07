@@ -3,6 +3,7 @@
 #include "source/Testing.h"
 #include "source/Segment.h"
 #include "source/Matrix.h"
+#include "source/Timer.h"
 #include "source/Line.h"
 #include "source/Ray.h"
 #include <iostream>
@@ -13,6 +14,7 @@ using namespace geomlib;
 int main()
 {
 	TESTING_SECTION_OPEN;
+	START_TIMER("hehe");
 
 	TEST("Multiplication");
 	Point<double> p1(1, 1, 1), p2(2, 3, -1);
@@ -28,6 +30,7 @@ int main()
 	SUBTEST_EQ("Dot zero", v1.DotProduct(zero), 0);
 	SUBTEST_EQ("Cross zero", v1.CrossProduct(zero), zero);
 
+	START_TIMER("haha");
 
 	TEST("Belonging");
 	p1 = Point<double>(-1, 3, 2); p2 = Point<double>(0, 2.5, 2.5);
@@ -171,7 +174,7 @@ int main()
 	SUBTEST_ASSERT("Plane parameters 2", pl.GetParameters(Point<double>(4, 1, 0), u, v));
 	SUBTEST_ASSERT("Plane parameters 3", pl.GetPointByParameters(u, v) == Point<double>(4, 1, 0));
 	SUBTEST_ASSERT("Cylinder parameters 1", c1.GetParameters(Point<double>(2, 0, 4), u, v));
-	SUBTEST_ASSERT("Cylinder parameters 2", u == 4 && v == acos(-1) / 2);
+	SUBTEST_ASSERT("Cylinder parameters 2", u == 4 && v == 3 * acos(-1) / 2);
 	auto q = c1.GetPointByParameters(u, v);
 	SUBTEST_ASSERT("Cylinder parameters 3", q == Point<double>(2, 0, 4));
 
@@ -240,12 +243,15 @@ int main()
 	r1.Deserialize(bin);
 	s1.Deserialize(bin);
 	tmp.Deserialize(bin);
+	STOP_TIMER("hehe");
+	STOP_TIMER("haha");
 
 	TessModel<double> mm;
-	std::vector<Point<double>> pts = { Point<double>(1, 2, 3), Point<double>(0, 4, 1), Point<double>(0, 1, 8), Point<double>(1, 2, 3) };
-	std::vector<Triangle> tt = { {0, 1, 2} };
-	mm.AddSurface(pts, tt);
-	auto qqq = mm.GetPointsOfTriangle(0);
-	auto gf = qqq[2];
+	//std::vector<Point<double>> pts = { Point<double>(1, 2, 3), Point<double>(0, 4, 1), Point<double>(0, 1, 8), Point<double>(1, 2, 3) };
+	//std::vector<Triangle> tt = { {0, 1, 2} };
+	//mm.AddSurface(pts, tt);
+	//auto qqq = mm.GetPointsOfTriangle(0);
+	//auto gf = qqq[2];
+	mm.SplitCylinder(c1, 4, 1);
 	int y = 0;
 }

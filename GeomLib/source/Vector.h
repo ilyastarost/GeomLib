@@ -72,22 +72,25 @@ namespace geomlib
 		Vector<T> Rotate(const Vector<T>& axis, T angle) const {
 			//rotating vector with quaternions around axis
 			Vector<T> rot = axis.NormalizedCopy();
+			T len = Length();
 			//angle should be in [-pi, pi]
-			angle -= acos(-1);
+			//angle -= acos(-1);
 			T quatw = cos(angle / 2), quatx = rot.X() * sin(angle / 2), quaty = rot.Y() * sin(angle / 2), quatz = rot.Z() * sin(angle / 2);
 
 			T resw = -quatx * this->X() - quaty * this->Y() - quatz * this->Z();
 			T resx = quatw * this->X() + quaty * this->Z() - quatz * this->Y();
-			T resy = quatw * this->Y() - quatx * this->Z() - quatz * this->X();
+			T resy = quatw * this->Y() - quatx * this->Z() + quatz * this->X();
 			T resz = quatw * this->Z() + quatx * this->Y() - quaty * this->X();
 
 			quatx = -quatx, quaty = -quaty, quatz = -quatz;
+			T val = sqrt(quatx * quatx + quaty * quaty + quatz * quatz + quatw * quatw);
+			quatx /= val, quaty /= val, quatz /= val, quatw /= val;
 
 			T ansx = resw * quatx + resx * quatw + resy * quatz - resz * quaty;
 			T ansy = resw * quaty - resx * quatz + resy * quatw - resz * quatx;
 			T ansz = resw * quatz + resx * quaty - resy * quatx + resz * quatw;
 
-			return Vector<T>(ansx, ansy, ansz);
+			return Vector<T>(ansx, ansy, ansz).Normalize() * len;
 		}
 		T DotProduct(const Vector<T>& vec) const
 		{
@@ -106,7 +109,7 @@ namespace geomlib
 		}
 		bool IsOpposite(const Vector<T>& vec, T eps = Epsilon::Eps()) const
 		{
-			return Angle(vec) <= eps;
+			return NormalizedCopy().Opposite() == vec.NormalizedCopy();
 		}
 		bool IsOrthogonal(const Vector<T>& vec, T epsPow2 = Epsilon::EpsPow2()) const
 		{
