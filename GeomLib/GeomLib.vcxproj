@@ -157,6 +157,7 @@
     <ClInclude Include="source\Surface.h" />
     <ClInclude Include="source\TessModel.h" />
     <ClInclude Include="source\Testing.h" />
+    <ClInclude Include="source\ThreadPool.h" />
     <ClInclude Include="source\Timer.h" />
     <ClInclude Include="source\Vector.h" />
   </ItemGroup>

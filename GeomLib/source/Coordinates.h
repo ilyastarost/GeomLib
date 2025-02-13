@@ -54,16 +54,12 @@ namespace geomlib
 
 		void Serialize(std::ostream& out) const
 		{
-			out.write((char*)&m_dblX, 3*sizeof(T));
-			out.write((char*)&m_dblY, sizeof(T));
-			out.write((char*)&m_dblZ, sizeof(T));
+			out.write((char*)&m_dblX, 3 * sizeof(T));
 		}
 
 		void Deserialize(std::istream& in)
 		{
-			in.read((char*)&this->m_dblX, sizeof(T));
-			in.read((char*)&this->m_dblY, sizeof(T));
-			in.read((char*)&this->m_dblZ, sizeof(T));
+			in.read((char*)&this->m_dblX, 3 * sizeof(T));
 		}
 	};
 }

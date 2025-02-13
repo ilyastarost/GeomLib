@@ -1,0 +1,27 @@
+﻿  GeomLib.cpp
+C:\Work\GeomLib\GeomLib\source\Timer.h(25,159): warning C4244: '+=': conversion from '_Rep' to 'int', possible loss of data
+          with
+          [
+              _Rep=__int64
+          ]
+C:\Work\GeomLib\GeomLib\source\TessModel.h(222,10): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Work\GeomLib\GeomLib\source\TessModel.h(221): message : while compiling class template member function 'void geomlib::TessModel<double,0>::SplitCylinder(const geomlib::Cylinder<double,0> &,T,T)'
+          with
+          [
+              T=double
+          ]
+C:\Work\GeomLib\GeomLib\GeomLib.cpp(251): message : see reference to function template instantiation 'void geomlib::TessModel<double,0>::SplitCylinder(const geomlib::Cylinder<double,0> &,T,T)' being compiled
+          with
+          [
+              T=double
+          ]
+C:\Work\GeomLib\GeomLib\GeomLib.cpp(245): message : see reference to class template instantiation 'geomlib::TessModel<double,0>' being compiled
+C:\Work\GeomLib\GeomLib\source\TessModel.h(165,18): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Work\GeomLib\GeomLib\source\TessModel.h(158): message : while compiling class template member function 'bool geomlib::TessModel<double,0>::FindIntersectionParallel(const geomlib::Ray<double,0> &,geomlib::Point<double,0> &,int &,geomlib::ThreadPool &) const'
+C:\Work\GeomLib\GeomLib\GeomLib.cpp(268): message : see reference to function template instantiation 'bool geomlib::TessModel<double,0>::FindIntersectionParallel(const geomlib::Ray<double,0> &,geomlib::Point<double,0> &,int &,geomlib::ThreadPool &) const' being compiled
+  Generating code
+  1 of 1122 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  GeomLib.vcxproj -> C:\Work\GeomLib\x64\Release\GeomLib.exe

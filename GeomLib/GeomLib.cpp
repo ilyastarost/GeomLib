@@ -1,3 +1,4 @@
+#include "source/ThreadPool.h"
 #include "source/TessModel.h"
 #include "source/Cylinder.h"
 #include "source/Testing.h"
@@ -14,7 +15,6 @@ using namespace geomlib;
 int main()
 {
 	TESTING_SECTION_OPEN;
-	START_TIMER("hehe");
 
 	TEST("Multiplication");
 	Point<double> p1(1, 1, 1), p2(2, 3, -1);
@@ -29,8 +29,6 @@ int main()
 
 	SUBTEST_EQ("Dot zero", v1.DotProduct(zero), 0);
 	SUBTEST_EQ("Cross zero", v1.CrossProduct(zero), zero);
-
-	START_TIMER("haha");
 
 	TEST("Belonging");
 	p1 = Point<double>(-1, 3, 2); p2 = Point<double>(0, 2.5, 2.5);
@@ -227,31 +225,49 @@ int main()
 	std::cout << pl.ToString() << std::endl;
 	std::cout << c1.ToString() << std::endl;
 	std::ofstream bout("out.bin", std::fstream::binary);
-	p2.Serialize(bout);
+	/*p2.Serialize(bout);
 	v2.Serialize(bout);
 	l2.Serialize(bout);
 	r2.Serialize(bout);
 	s2.Serialize(bout);
 	rot.Serialize(bout);
 	pl.Serialize(bout);
-	c1.Serialize(bout);
+	c1.Serialize(bout);*/
 	bout.close();
 	std::ifstream bin("out.bin", std::fstream::binary);
-	p1.Deserialize(bin);
+	/*p1.Deserialize(bin);
 	v1.Deserialize(bin);
 	l1.Deserialize(bin);
 	r1.Deserialize(bin);
 	s1.Deserialize(bin);
-	tmp.Deserialize(bin);
-	STOP_TIMER("hehe");
-	STOP_TIMER("haha");
+	tmp.Deserialize(bin);*/
 
-	TessModel<double> mm;
+	TessModel<double> mm, m2;
 	//std::vector<Point<double>> pts = { Point<double>(1, 2, 3), Point<double>(0, 4, 1), Point<double>(0, 1, 8), Point<double>(1, 2, 3) };
 	//std::vector<Triangle> tt = { {0, 1, 2} };
 	//mm.AddSurface(pts, tt);
 	//auto qqq = mm.GetPointsOfTriangle(0);
 	//auto gf = qqq[2];
-	mm.SplitCylinder(c1, 4, 1);
+	mm.SplitCylinder(c1, 4, 0.00000000000001);
+	/*bin.close();
+	bout.open("out.bin", std::fstream::binary);
+	std::cout << mm.ToString();
+	mm.Serialize(bout);
+	bout.close();
+	bin.open("out.bin", std::fstream::binary);
+	m2.Deserialize(bin);*/
+
+
+	Ray<double> testRay(Point<double>(-2, -2, 2), Vector<double>(1, 2, 1));
+	START_TIMER("linear");
+	int num;
+	mm.FindIntersection(testRay, p1, num);
+	STOP_TIMER("linear");
+	ThreadPool tp;
+	START_TIMER("parallel");
+	mm.FindIntersectionParallel(testRay, p1, num, tp);
+	STOP_TIMER("parallel");
+
+	Timer::PrintTimers();
 	int y = 0;
 }

@@ -66,6 +66,9 @@
     <ClInclude Include="source\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\ThreadPool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeomLib.cpp">

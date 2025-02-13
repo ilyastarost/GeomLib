@@ -1,11 +1,16 @@
 #pragma once
+#include "ThreadPool.h"
 #include "Cylinder.h"
 #include "Segment.h"
 #include "Matrix.h"
 #include "Plane.h"
 #include "Ray.h"
+#include <climits>
 #include <vector>
+#include <thread>
 #include <set>
+
+#include "Timer.h"
 
 namespace geomlib
 {
@@ -36,7 +41,7 @@ namespace geomlib
 			m_vecAllNormals.insert(m_vecAllNormals.end(), norms.begin(), norms.end());
 		}
 
-		static Vector<T> NormalToCoords(const Point<T>& a, const Point<T>& b, const Point<T>& c)
+		Vector<T> NormalToCoords(const Point<T>& a, const Point<T>& b, const Point<T>& c) const
 		{
 			return (b - a).CrossProduct(c - a).Normalize();
 		}
@@ -75,43 +80,141 @@ namespace geomlib
 			return res;
 		}
 
-		static bool IntersectsTriangle(int ind, const Ray<T>& ray, Point<T>& pt)
+		bool IntersectsTriangle(int ind, const Ray<T>& ray, Point<T>& pt) const
 		{
-			auto check = Plane<T>(m_vecTriangles[ind].ind[0], NormalToTriangle(ind)).FindIntersections(ray);
+			auto check = Plane<T>(m_vecAllPoints[m_vecTriangles[ind].ind[0]], NormalToTriangle(ind)).FindIntersections(ray);
 			if (check.size() == 0) 
 				return false;
 			Point<T> p = check[0];
-			Vector<T> n1 = NormalToCoords(m_vecTriangles[ind].ind[0], m_vecTriangles[ind].ind[1], p);
-			Vector<T> n2 = NormalToCoords(m_vecTriangles[ind].ind[1], m_vecTriangles[ind].ind[2], p);
-			Vector<T> n3 = NormalToCoords(m_vecTriangles[ind].ind[2], m_vecTriangles[ind].ind[0], p);
+			Vector<T> n1 = NormalToCoords(m_vecAllPoints[m_vecTriangles[ind].ind[0]], m_vecAllPoints[m_vecTriangles[ind].ind[1]], p);
+			Vector<T> n2 = NormalToCoords(m_vecAllPoints[m_vecTriangles[ind].ind[1]], m_vecAllPoints[m_vecTriangles[ind].ind[2]], p);
+			Vector<T> n3 = NormalToCoords(m_vecAllPoints[m_vecTriangles[ind].ind[2]], m_vecAllPoints[m_vecTriangles[ind].ind[0]], p);
 
 			if (!Epsilon::IsZero(n1.DotProduct(n2) - 1) || !Epsilon::IsZero(n1.DotProduct(n3) - 1)) return false;
 			pt = p;
 			return true;
 		}
 
-		bool FindIntersection(const Ray<T>& ray, Point<T>& pt, int& ind) const
+		bool FindIntersection(const Ray<T>& ray, Point<T>& pt, int& ind, int left = 0, int right = INT_MAX) const
 		{
-			Point<T> ans;
-			int pos = -1;
-			bool found = false;
-			for (int i = 0; i < m_vecTriangles.size(); i++)
+			START_AUTO_TIMER(parallel3);
+			std::cout << left << " " << right << std::endl;
+
+			Point<T> ans(DBL_MAX, DBL_MAX, DBL_MAX), cur(DBL_MAX, DBL_MAX, DBL_MAX);
+			T dist = DBL_MAX;
+			int pos = -1, lim = std::min(right, (int)m_vecTriangles.size());
+			for (int i = left; i < lim; i++)
 			{
-				Point<T> cur;
 				if (IntersectsTriangle(i, ray, cur))
 				{
-					if (!found || cur.Distance2(ray.Start()) < ans.Distance2(ray.Start())) {
+					T newDist = cur.DistancePow2(ray.Start());
+					if (newDist < dist) {
 						ans = cur;
 						pos = i;
-						found = true;
+						dist = newDist;
 					}
 				}
 			}
-			if (!found)
+			pt = ans;
+			ind = pos;
+			if (dist == INT_MAX)
 				return false;
+			return true;
+		}
+
+	private:
+		class TriangleTask : public ThreadTask
+		{
+		private:
+			Ray<T> ray;
+			Point<T> pt;
+			Point<T>& ans;
+			int ind;
+			int& pos;
+			int left, right;
+			T& dist;
+			const TessModel* parent;
+
+		public:
+			TriangleTask(const Ray<T>& _ray, Point<T>& _ans, int& _pos, T& _dist, int _left, int _right, const TessModel* par) : ans(_ans), pos(_pos), dist(_dist)
+			{
+				ray = _ray;
+				left = _left;
+				right = _right;
+				parent = par;
+			}
+			void ToDo() override
+			{
+				parent->FindIntersection(ray, pt, ind, left, right);
+				T newDist = pt.DistancePow2(ray.Start());
+				ans = pt;
+				pos = ind;
+				dist = newDist;
+			}
+		};
+
+	public:
+		bool FindIntersectionParallel(const Ray<T>& ray, Point<T>& pt, int& ind, ThreadPool& tp) const
+		{
+			int num = 4 * std::thread::hardware_concurrency();
+			std::vector<Point<T>> res(num);
+			std::vector<int> tr(num);
+			std::vector<T> dists(num);
+			Point<T> ans(DBL_MAX, DBL_MAX, DBL_MAX), cur(DBL_MAX, DBL_MAX, DBL_MAX);
+			T dist = DBL_MAX;
+			int pos = -1, sz = (m_vecTriangles.size() + num - 1) / num;
+			for (int i = 0; i < num; i++)
+			{
+				std::shared_ptr<ThreadTask> task(new TriangleTask(ray, res[i], tr[i], dists[i], i * sz, (i + 1) * sz, this));
+				tp.AssignTask(task);
+			}
+			tp.WaitEnd();
+			for (int i = 0; i < num; i++) {
+				if (dists[i] < dist)
+				{
+					dist = dists[i];
+					ans = res[i];
+					ind = tr[i];
+				}
+			}
 			pt = ans;
 			ind = pos;
 			return true;
+
+			//int num = std::thread::hardware_concurrency();
+			//std::vector<Point<T>> res(num);
+			//std::vector<int> tr(num);
+			//std::vector<std::thread> threads;
+			//int sz = (m_vecTriangles.size() + num - 1) / num;
+			//int mx = m_vecTriangles.size();
+
+			//START_TIMER("parallel2");
+			//for (int i = 0; i < num; i++)
+			//{
+			//	threads.emplace_back(
+			//		[this,i,sz,mx,&res,&tr,&ray]{ 
+			//			return this->FindIntersection(ray, res[i], tr[i], i * sz, std::min((i + 1) * sz, mx)); 
+			//		});
+			//	//threads[i].detach();
+			//}
+			//STOP_TIMER("parallel2");
+
+			//Point<T> ans, cur;
+			//T dist = DBL_MAX;
+			//int pos = -1;
+			//for (int i = 0; i < num; i++)
+			//{
+			//	threads[i].join();
+			//	if (res[i].DistancePow2(ray.Start()) < dist) {
+			//		ans = res[i];
+			//		pos = tr[i];
+			//	}
+			//}
+			//if (dist == DBL_MAX)
+			//	return false;
+			//pt = ans;
+			//ind = pos;
+			//return true;
 		}
 
 		void SplitCylinder(const Cylinder<T>& cyl, T h, T deviation)
@@ -163,6 +266,75 @@ namespace geomlib
 			{
 				m_vecAllNormals.push_back(m_vecAllPoints[i] - m_vecAllPoints[4 * n + 3]);
 			}
+		}
+
+		std::string ToString() const
+		{
+			std::stringstream out;
+			out << "Model with points: " << std::endl;
+			for (auto p : m_vecAllPoints)
+				out << p.ToString() << std::endl;
+			out << "    Normals: " << std::endl;
+			for (auto v : m_vecAllNormals)
+				out << v.ToString() << std::endl;
+			out << "    Triangles: " << std::endl;
+			for (auto t : m_vecTriangles)
+				out << "         " << t.ind[0] << ' ' << t.ind[1] << ' ' << t.ind[2] << std::endl;
+			out << "    Surfaces: " << std::endl;
+			for (int i = 0; i < m_vecLastOfSurface.size(); i++)
+				out << "         " << (i ? m_vecLastOfSurface[i - 1] + 1 : 0) << ' ' << m_vecLastOfSurface[i] << std::endl;
+			return out.str();
+		}
+
+		void Serialize(std::ostream& out) const
+		{
+			int n = m_vecAllPoints.size();
+			out.write((char*)&n, sizeof(int));
+			for (auto& p : m_vecAllPoints)
+				p.Serialize(out);
+			n = m_vecAllNormals.size();
+			out.write((char*)&n, sizeof(int));
+			for (auto& v : m_vecAllNormals)
+				v.Serialize(out);
+			n = m_vecTriangles.size();
+			out.write((char*)&n, sizeof(int));
+			for (auto& t : m_vecTriangles) 
+			{
+				out.write((char*)&t.ind[0], sizeof(int));
+				out.write((char*)&t.ind[1], sizeof(int));
+				out.write((char*)&t.ind[2], sizeof(int));
+			}
+			n = m_vecLastOfSurface.size();
+			out.write((char*)&n, sizeof(int));
+			for (auto q : m_vecLastOfSurface) 
+			{
+				out.write((char*)&q, sizeof(int));
+			}
+		}
+
+		void Deserialize(std::istream& in)
+		{
+			int n;
+			in.read((char*)&n, sizeof(int));
+			m_vecAllPoints.resize(n);
+			for (auto& p : m_vecAllPoints)
+				p.Deserialize(in);
+			in.read((char*)&n, sizeof(int));
+			m_vecAllNormals.resize(n);
+			for (auto& v : m_vecAllNormals)
+				v.Deserialize(in);
+			in.read((char*)&n, sizeof(int));
+			m_vecTriangles.resize(n);
+			for (auto& t : m_vecTriangles)
+			{
+				in.read((char*)&t.ind[0], sizeof(int));
+				in.read((char*)&t.ind[1], sizeof(int));
+				in.read((char*)&t.ind[2], sizeof(int));
+			}
+			in.read((char*)&n, sizeof(int));
+			m_vecLastOfSurface.resize(n);
+			for (auto& q : m_vecLastOfSurface)
+				in.read((char*)&q, sizeof(int));
 		}
 	};
 }
